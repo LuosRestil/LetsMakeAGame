@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Movement - Let's Make A Game</title>
+    <link rel="stylesheet" href="libs/prism.css" />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <header>
+      <div id="title">Let's Make A Game</div>
+      <nav id="nav"></nav>
+    </header>
+    <article>
+      <h1>Movement</h1>
+      <!-- setup lesson -->
+      <section>
+        <p>
+          It's time for us to take control over our player. Let's make a class
+          to encapsulate our player's attributes and behavior.
+        </p>
+        <pre>
+          <code class="lang-typescript">
+            export class Player {
+              width: number = 50;
+              height: number = 25;
+              ctx: CanvasRenderingContext2D;
+            
+              constructor(ctx: CanvasRenderingContext2D) {
+                this.ctx = ctx;
+              }
+            
+              draw() {
+                // our drawing code from earlier...
+                // don't forget to add "this." to ctx, width, and height
+                // canvas will now be this.ctx.canvas
+              }
+            }
+          </code>
+        </pre>
+        <p>Now we can use this in <code class="lang-markup">main.ts</code>.</p>
+        <pre>
+          <code class="lang-typescript">
+            import { Player } from "./Player";
+
+            // canvas setup here...
+
+            const player = new Player(ctx);
+            player.draw();
+          </code>
+        </pre>
+        <p>
+          This gets us exactly where we were before, but now we've made our code
+          a little more manageable.
+        </p>
+        <p>
+          If we're going to control our player, it's going to have to be
+          animated. This means we'll have to draw the player to the screen at
+          its current position, calculate a new position, then clear the screen
+          and draw the player at that position, and repeat ad infinitum, or ad
+          nauseum, whichever comes first. Let's give the player a position to
+          start with, so we can control where it's drawn.
+        </p>
+        <pre>
+          <code class="lang-typescript">
+            export class Player {
+              width: number = 50;
+              height: number = 25;
+              pos: {x: number, y: number};
+              ctx: CanvasRenderingContext2D;
+            
+              constructor(ctx: CanvasRenderingContext2D) {
+                this.ctx = ctx;
+                this.pos = {
+                  x: ctx.canvas.width / 2,
+                  y: ctx.canvas.height / 2
+                }
+              }
+            
+              draw() {
+                this.ctx.save();
+                this.ctx.translate(this.pos.x, this.pos.y);
+                // our existing drawing code...
+                this.ctx.restore();
+              }
+            }
+          </code>
+        </pre>
+        <p>
+          Notice that we're also saving and restoring our canvas context
+          properties before we draw our character. Because we're going to be
+          drawing this over and over in a loop, if we don't reset our
+          transformation, the canvas will be shifted again and again relative to
+          its previous transformation and our origin will end up far away from
+          where we intend it. By saving and restoring, the transform will be
+          reset back to its original (0, 0) position as soon as we're done
+          drawing, and on the next iteration of the loop we'll be able to easily
+          shift back to the player's position.
+        </p>
+        <p>
+          Now we can create our animation loop. There are lots of ways to do
+          this, but there's one that's built into JavaScript specifically for
+          the kind of thing we're trying to accomplish.
+        </p>
+        <pre>
+          <code class="lang-typescript">
+            // main.ts
+            
+            // ...
+
+            requestAnimationFrame(animate);
+
+            function animate() {
+              requestAnimationFrame(animate);
+              ctx.clearRect(0, 0, canvas.width, canvas.height);
+              player.draw();
+              player.pos.x += 0.5;
+            }
+          </code>
+        </pre>
+        <p>
+          <code class="lang-markup">requestAnimationFrame</code> allows us to
+          provide a callback function to be executed in a loop, usually at the
+          refresh rate of the user's display. If the code in the callback takes
+          longer to execute, it will wait until the code has finished running,
+          then run the next frame. Here, we are doing as we described earlier,
+          clearing the drawing surface from the last frame, drawing the player
+          at its new position, then calculating the next position.
+        </p>
+        <video autoplay muted controls>
+          <source src="vid/02-movement/char-move-1.mp4" type="video/mp4" />
+          Your browser does not support the video tag.
+        </video>
+        <p>
+          We're moving! There's one more thing we'll need to take into account,
+          however. Remember what we said about
+          <code class="lang-markup">requestAnimationFrame</code> looping at the
+          refresh rate of the user's monitor? That means if someone has a 60
+          frames per second refresh rate and someone else has a 120 frames per
+          second refresh rate, our function is going to be called twice as many
+          times on the second person's machine, and our player will move twice
+          as far. This presents a problem, because we want our game to look and
+          feel the same for everyone, regardless of what machine they're playing
+          on. To address this, we're going to scale all movements in our game
+          relative to the amount of time that has passed between each frame.
+          That way if you have double the refresh rate, the time difference
+          between each frame will be half as long, and we'll only move the
+          objects on screen half as far.
+        </p>
+        <p>
+          <code class="lang-markup">requestAnimationFrame</code> helps us
+          achieve this. When it calls our callback function, it does so with one
+          argument, which is a timestamp in milliseconds since the start of the
+          loop. We can add that argument to our callback function.
+        </p>
+        <pre>
+          <code class="lang-typescript">
+            function animate(ms: number)
+          </code>
+        </pre>
+        <p>
+          Then we can figure out how much time has passed by keeping track of
+          the previous frame's timestamp and subtracting it from the current
+          one.
+        </p>
+        <pre>
+          <code class="lang-typescript">
+            // ... getting our canvas context ...
+            let lastTime = 0;
+            const speed = 100;
+  
+            const player = new Player(ctx);
+  
+            requestAnimationFrame(animate);
+  
+            function animate(ms: number) {
+              requestAnimationFrame(animate);
+  
+              const dt = ms - lastTime;
+              const dts = dt / 60;
+  
+              ctx.clearRect(0, 0, canvas.width, canvas.height);
+              player.draw();
+              player.pos.x += speed * dts;
+            }
+          </code>
+        </pre>
+        <p>
+          <code class="lang-markup">dt</code> stands for "delta time", the
+          "delta" (difference) between the previous time and the current time.
+          Because this time is in milliseconds, we're creating another variable
+          <code class="lang-typescript">dts</code>, "delta time (in) seconds",
+          allowing us to think about our movements in terms of units per second.
+          For example, the speed variable we've created represents pixels per
+          second.
+          <!-- If we have a 60 fps refresh rate, our delta time per frame is going to be (rounding) 16.7ms. This makes our delta time in seconds about 0.0167. Each frame, we'll multiply our speed, 100, by this delta time in seconds, giving us about 1.67 pixels per frame. Multiply this by the 60 frames we have in a second, and you get 100.2 pixels, (tiny error from rounding at the start).  -->
+        </p>
+        <p>
+          Now that we understand the basic mechanics of animation, let's give
+          ourselves some control over the player. To do this, we'll need to
+          respond to key presses, WASD and/or the arrow keys. Instead of
+          hard-coding movement into our animation, we'll check to see what keys
+          are being pressed and we'll move the character based on that
+          information. Unfortunately, JavaScript and the browser don't have a
+          way of checking what keys are down at any given moment. What we do
+          have access to are <code class="lang-markup">keydown</code> and
+          <code class="lang-markup">keyup</code> events. By keeping track of
+          when a player has pressed a key and when they have released it, we can
+          extrapolate when a key is held. Let's do that now.
+        </p>
+        <p>First, we need an object to hold our keypress data.</p>
+        <pre>
+          <code class="lang-typescript">
+            const keys = {
+              up: false,
+              down: false,
+              left: false,
+              right: false,
+            };
+          </code>
+        </pre>
+        <p>
+          Next, we'll need to listen for and respond to keydown and keyup
+          events.
+        </p>
+        <pre>
+          <code class="lang-typescript">
+            document.addEventListener("keydown", (evt) => {
+              const key = evt.key;
+              switch (key) {
+                case 'ArrowUp':
+                case 'w':
+                  keys.up = true;
+                  break;
+                case 'ArrowDown':
+                case 's':
+                  keys.down = true;
+                  break;
+                case 'ArrowLeft':
+                case 'a':
+                  keys.left = true;
+                  break;
+                case 'ArrowRight':
+                case 'd':
+                  keys.right = true;
+                  break;
+              } 
+            });
+            
+            document.addEventListener("keyup", (evt) => {
+              const key = evt.key;
+              switch (key) {
+                case 'ArrowUp':
+                case 'w':
+                  keys.up = false;
+                  break;
+                case 'ArrowDown':
+                case 's':
+                  keys.down = false;
+                  break;
+                case 'ArrowLeft':
+                case 'a':
+                  keys.left = false;
+                  break;
+                case 'ArrowRight':
+                case 'd':
+                  keys.right = false;
+                  break;
+              } 
+            });
+          </code>
+        </pre>
+        <p>
+          Now in our animation loop, we can check to see which keys are pressed
+          and move our character accordingly.
+        </p>
+        <pre>
+          <code class="lang-typescript">
+            if (keys.up) player.pos.y -= speed * dts;
+            if (keys.down) player.pos.y += speed * dts;
+            if (keys.left) player.pos.x -= speed * dts;
+            if (keys.right) player.pos.x += speed * dts;
+          </code>
+        </pre>
+        <video autoplay muted controls>
+          <source src="vid/02-movement/char-move-2.mp4" type="video/mp4" />
+          Your browser does not support the video tag.
+        </video>
+        <p>
+          Of course, since our game is taking place in space, this is not the
+          kind of movement we're actually going to employ. Instead, we're going
+          to steering ourselves and moving with a propulsion force, with the
+          continuous, frictionless momentum of the vast void of the cosmos. For
+          this, we'll employ Euler integration and vectors.
+        </p>
+        <a href="01-drawing.html">Previous</a>
+        <a href="03-vectors.html">Next</a>
+      </section>
+    </article>
+    <script src="libs/prism.js"></script>
+  </body>
+</html>

@@ -29,14 +29,18 @@
         <p>
           Let's clean this project up a little bit in preparation for making it our own. There's a bunch of stuff in here for the demo page that we won't need. We can scrap <code class="lang-markup">public/vite.svg</code>, as well as <code class="lang-markup">src/counter.ts</code>, and <code class="lang-markup">src/typescript.svg</code>. Next, we can erase all the contents of <code class="lang-markup">src/style.css</code> and <code class="lang-markup">src/main.ts</code>. Actually, we do want to leave <code class="lang-typescript">import "./style.css";</code> in our <code class="lang-markup">main.ts</code> file. This is how we import our styles, rather than with a link tag in <code class="lang-markup">index.html</code>. Lastly, we can git rid of the Vite icon link tag in <code class="lang-markup">src/index.html</code> and update the title to one of our choosing. Just to make sure everything is working, let's drop a fat "Hello World" in our <code class="lang-markup">index.html</code> file and run our dev server again.
         </p>
-        <img src="img/00-setup/" alt="hello world text" />
+        <img src="img/00-setup/hello-world.png" alt="hello world text" />
         <p>
           Go ahead and change the text. You'll find that the browswer will update with no intervention on your part, and your terminal output should notify you that a change was detected.
         </p>
         <p>
           One further note. If you're familiar with other bundlers like Webpack, you may have noticed something odd about the script source in <code class="lang-markup">index.html</code>. That's right, it's a .ts file! But the browser doesn't know how to read TypeScript. Shouldn't this be a bundled .js file? Well, it turns out Vite does things a little differently during development. It doesn't bundle all your code into a single file. Instead, it leverages the browser's native ES module capabilities, (meaning the browser can directly request individual module files). The brower will see this script tag and request the source file. Vite's dev server will then intercept the request, transpile the TypeScript on the fly, and send the resulting JavaScript, which the browser <em>does</em> know how to read, back to the browser. When it comes time to deploy your code, then Vite will do the bundling you'd normally expect.
         </p>
-        <!-- TODO link to the next lesson -->
+        <p>
+          Now that our project scaffolding is in place, we can start building our game! In our next unit we'll learn how to draw to the screen using the HTML Canvas.
+        </p>
+        <a href="index.html">Previous</a>
+        <a href="01-drawing.html">Next</a>
       </section>
     </article>
     <script src="libs/prism.js"></script>

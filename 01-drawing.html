@@ -17,7 +17,8 @@
       <!-- setup lesson -->
       <section>
         <p>
-          Now that we have our project in place, let's start putting stuff on the screen with HTML Canvas. First order of business, we need to have a canvas to draw on. So let's do that. In our <code class="lang-markup">index.html</code> file, let's give ourselves a canvas element inside a container div.
+          Let's start putting stuff on the screen with HTML Canvas! 
+          First order of business, we need to create a canvas to draw on. So let's do that. In our <code class="lang-markup">index.html</code> file, let's give ourselves a <code class="lang-markup">canvas</code> element inside a container div.
         </p>
         <pre>
           <code class="lang-markup">
@@ -216,7 +217,11 @@
         <p>
           Take note that every time we set some property of the canvas context, like styling, translating, rotating, all this stuff, the change sticks around until we explicitly change it again. If we know we're going to make a bunch of difficult-to-reverse changes, we can save the current state of the canvas context's properties, then do whatever we want to the context, then restore it back to its old state using the <code class="lang-typescript">ctx.save()</code> and <code class="lang-typescript">ctx.restore()</code> methods. This operation isn't free, however, so you may want to use it sparingly.
         </p>
-        <!-- TODO introduce the next section -->
+        <p>
+          Now we can draw to the screen, but that only gets us so far. In our next unit, we'll learn about animations and character control.
+        </p>
+        <a href="00-setup.html">Previous</a>
+        <a href="02-movement.html">Next</a>
       </section>
     </article>
     <script src="libs/prism.js"></script>

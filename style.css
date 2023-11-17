@@ -26,7 +26,14 @@ article {
   max-width: 1080px;
 }
 
-img {
+p {
+  margin-top: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+img, video {
   width: 100%;
   height: auto;
+  margin-top: 1.5rem;
+  margin-bottom: 1.5rem;
 }
