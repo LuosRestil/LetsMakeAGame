@@ -25,7 +25,7 @@
           <code class="lang-typescript">
             // Vec2.ts
 
-            class Vec2 {
+            export class Vec2 {
               x: number;
               y: number;
             
@@ -122,7 +122,7 @@
           </code>
         </pre>
         <p>
-          Normalization is scaling a vector such that its magnitude becomes 1. This greatly simplifies some calculations for us. To do this, we'll divide the vector by its magnitude, (or in practice, we'll scale it by one divided by its magnitude). Of course, we'll first need to <em>find</em> the vector's magnitude. We can do this with the Pythagorean Theorem.
+          Normalization is scaling a vector such that its magnitude becomes 1. (A vector with a magnitude of 1 is known as a "unit vector"). This greatly simplifies some calculations for us. To do this, we'll divide the vector by its magnitude, (or in practice, we'll scale it by one divided by its magnitude). Of course, we'll first need to <em>find</em> the vector's magnitude. We can do this with the Pythagorean Theorem.
         </p>
         <img src="img/03-vectors/get-mag.png" alt="getting vector magnitude">
         <pre>
