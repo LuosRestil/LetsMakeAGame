@@ -21,6 +21,7 @@
         <pre>
           <code class="lang-typescript">
             // main.ts
+            import { Game } from "./Game";
             import "./style.css";
 
             const canvas = document.getElementById("game-canvas") as HTMLCanvasElement;
@@ -28,7 +29,7 @@
             canvas.height = 720;
             const ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
 
-            new Game(ctx);
+            new Game(ctx).start();
 
 
             // Game.ts
@@ -70,6 +71,9 @@
             }
           </code>
         </pre>
+        <p>
+          Notice that we're using an arrow function for the <code class="lang-typescript">loop</code> method. If we don't do this, <code class="lang-typescript">this</code> is going to be <code class="lang-typescript">undefined</code> inside the method because of the way <code class="lang-typescript">this</code> is scoped in callback functions in JavaScript. The arrow function ensures that <code class="lang-typescript">this</code> is bound to the class in which the function is defined.
+        </p>
         <p>
           This brings us back to where we started in terms of game functionality, but now we're in a better position to expand. Time to create our <code class="lang-typescript">Enemy</code> class.
         </p>
@@ -160,7 +164,7 @@
 
               // ...
 
-              private spawnEnemies() {
+              private spawnEnemies(): Enemy[] {
                 let enemies = [];
                 for (let i = 0; i &lt; 3; i++) {
                   enemies.push(new Enemy(this.ctx));
