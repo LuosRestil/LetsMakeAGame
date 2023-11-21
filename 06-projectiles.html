@@ -15,9 +15,241 @@
     <article>
       <h1>Projectiles</h1>
       <section>
-        
+        <p>
+          This is not going to be terribly dissimilar to what we just did to create enemies. We'll create a projectile class. It will have an update method that will add its velocity to its position. It will have a draw method that shows the projectile on the screen. Our <code class="lang-typescript">game</code> will have an array of projectiles that will be updated and drawn each frame. The only thing that's really different about this is how we determine our projectile's starting position and velocity. Let's go ahead and get the known stuff out of the way.
+        </p>
+        <pre>
+          <code class="lang-typescript">
+            // Projectile.ts
+            import { Vec2 } from "./Vec2";
+
+            export class Projectile {
+              ctx: CanvasRenderingContext2D;
+              pos: Vec2;
+              vel: Vec2;
+              radius: number = 10;
+
+              constructor(ctx: CanvasRenderingContext2D, pos: Vec2, vel: Vec2) {
+                this.ctx = ctx;
+                this.pos = pos;
+                this.vel = vel;
+              }
+
+              update(dts: number): void {
+                this.pos.add(Vec2.scale(this.vel, dts));
+              }
+
+              draw(): void {
+                const ctx = this.ctx;
+                ctx.strokeStyle = "chocolate";
+                ctx.fillStyle = "burlywood";
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.arc(0, 0, this.radius, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.fill();
+
+                ctx.fillStyle = "saddlebrown";
+                ctx.beginPath();
+                ctx.arc(2, -3, 3, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(-5, 4, 2, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(4, 4, 2, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+              }
+            }
+
+
+            // Game.ts
+            // properties
+            projectiles: Projectile[] = [];
+            // update method
+            for (let projectile of this.projectiles) {
+              projectile.update(dts);
+            }
+            // draw method
+            for (let projectile of this.projectiles) {
+              projectile.draw();
+            }
+          </code>
+        </pre>
+        <p>
+          Now we have the blueprint for launching chocolate chip cookies at space blobs. Let's get to the new stuff.
+        </p>
+        <p>
+          Projectiles will be fired by the player, so we're going to give control of their creation to the Player class. Let's listen for another key in our <code class="lang-typescript">keydown</code> listener.
+        </p>
+        <pre>
+          <code class="lang-typescript">
+            // below our switch
+            if (!evt.repeat && (key === " " || key === "f")) {
+              this.fire();
+            }
+          </code>
+        </pre>
+        <p>
+          We need to put this outside our switch because we need the extra condition <code class="lang-typescript">!evt.repeat</code>. The <code class="lang-typescript">repeat</code> property tells us whether the key is auto-repeating from being held down. We don't want the player to be able to spam projectiles by just holding down the fire button, so we're only going to respond to their keypress if it's a <em>new</em> keypress. Now let's make the <code class="lang-typescript">fire</code> method we just referenced. To fire a projectile, we'll need to know its starting position and velocity. It will start at our player's nose, so we'll have to figure out how to calculate that location. The velocity will be in the direction the player is facing. (Sound familiar? We had to calculate this to propel our player forward, so we can reuse this logic).
+        </p>
+        <pre>
+          <code class="lang-typescript">
+            private fire(): void {
+              const nosePos = Vec2.fromAngle(this.rotation, this.width / 2).add(this.pos);
+              const vel = Vec2.fromAngle(this.rotation, this.projectileSpeed);
+              this.game.projectiles.push(new Projectile(this.ctx, nosePos, vel));
+            }
+          </code>
+        </pre>
+        <p>
+          Once again, all our vector groundwork has made this a pretty simple task. To get the position of the player's nose, we first get a vector from its angle of rotation, with a magnitude equal to half its width, essentially pointing from the center of the player to its nose. Keep in mind, though, this is just a magnitude and a direction, and when we are actually drawing vector coordinates on the screen, the origin matters. Our origin when working with the canvas is (0, 0). If we were to draw this vector's coordinates on the screen, they wouldn't be anywhere near the player because we're drawing them in relation to that origin. To change that, we add the player's position to the vector, essentially shifting its origin point from (0, 0) to the player's position. Now our projectile will be drawn where we expect. You can experiment with exactly how this works, (once we're successfullly firing projectiles and displaying them on the screen), but removing the <code class="lang-typescript">.add</code> from <code class="lang-typescript">nosePos</code> and firing some projectiles while rotating your player. You'll see that they are being fired from the top left corner of the canvas, regardless of your player's position.
+        </p>
+        <p>
+          We get our starting velocity in more or less the same way, but because a velocity is just a force and not something we draw on the screen, we don't have to worry about positioning it. All we need is its magnitude and direction. We're using a new property of the Player class here, <code class="lang-typescript">projectileSpeed</code>, and it will need to be added at the top of our class.
+        </p>
+        <pre>
+          <code class="lang-typescript">
+            projectileSpeed: number = 200;
+          </code>
+        </pre>
+        <p>
+          The last thing to note here is that we are pushing this projectile into the <code class="lang-typescript">game</code>'s <code class="lang-typescript">projectiles</code> array. In order to do this, we'll need to add a reference to the <code class="lang-typescript">game</code> as a property of the Player.
+        </p>
+        <pre>
+          <code class="lang-typescript">
+            // Player.ts
+            constructor(ctx: CanvasRenderingContext2D, game: Game) {
+              this.ctx = ctx;
+              this.game = game;
+              // ...
+            }
+
+
+            // Game.ts
+            constructor(ctx: CanvasRenderingContext2D) {
+              this.ctx = ctx;
+              this.player = new Player(ctx, this);
+              this.enemies = this.spawnEnemies();
+            }
+          </code>
+        </pre>
+        <p>
+          Remember when we made the <code class="lang-typescript">Game</code> class, we said we'd be passing references to it so we could update its state from the outside? This is the kind of thing we were talking about.
+        </p>
+        <video muted controls>
+          <source src="vid/06-projectiles/projectiles.mp4" type="video/mp4" />
+          Your browser does not support the video tag.
+        </video>
+        <p>
+          It works! We're firing cookies at our blobs! Before we move on to the next thing, there's two points I'd like to address. For one thing, our cookies look a little bit stale. We'll add some subtle random rotation to make it a look a little less cookie-cutter. Another thing is we're continually adding adding projectiles, which need to be updated and drawn every frame, but we're never taking any away, and most of them are offscreen after just a few seconds. We'll need to address this, or all these extraneous calculations will slow our game down over time. First, the rotation.
+        </p>
+        <pre>
+          <code class="lang-typescript">
+            // Projectile.ts
+            // properties
+            rotation: number = 0;
+            rotationSpeed: number;
+
+            // constructor
+            this.rotationSpeed = randRange(-Math.PI * 2, Math.PI * 2);
+
+            // update
+            this.rotation += this.rotationSpeed * dts;
+
+            draw(): void {
+              const ctx = this.ctx;
+              ctx.save();
+              ctx.translate(this.pos.x, this.pos.y);
+              ctx.rotate(this.rotation);
+              // ...
+            }
+          </code>
+        </pre>
+        <p>
+          All stuff we already know how to do. We've added a convenience method <code class="lang-typescript">randRange</code> for getting a random floating point number between a given minimum and maximum. We had to do this same task in the constructor of our <code class="lang-typescript">Enemy</code> class as well, and we can replace that code with this method.
+        </p>
+        <pre>
+          <code class="lang-typescript">
+            // Enemy.ts
+            constructor(ctx: CanvasRenderingContext2D) {
+              this.ctx = ctx;
+              this.vel = Vec2.fromAngle(Math.random() * Math.PI * 2).scale(
+                randRange(this.minVel, this.maxVel)
+              );
+            }
+          </code>
+        </pre>
+        <p>
+          And here's that implementation.
+        </p>
+        <pre>
+          <code class="lang-typescript">
+            export function randRange(min: number, max: number): number {
+              return min + Math.random() * (max - min);
+            }
+          </code>
+        </pre>
+        <p>
+          Now we have subtly rotating cookies, making each look a little more unique, even though they're all drawn exactly the same.
+        </p>
+        <video muted controls>
+          <source src="vid/06-projectiles/rotating-cookies.mp4" type="video/mp4" />
+          Your browser does not support the video tag.
+        </video>
+        <p>
+          Now, what do we do about all these cookies flying off into space that we don't need to worry about any more? We're going to do a bounds check similar to the one in <code class="lang-typescript">screenWrap</code>, but instead of wrapping, we're going to mark these projectiles as inactive. Then we'll filter out the inactive projectiles before updating and drawing.
+        </p>
+        <pre>
+          <code class="lang-typescript">
+            // Projectile.ts
+            // setup
+            isActive: boolean = true;
+            update
+
+            update(dts: number): void {
+              this.pos.add(Vec2.scale(this.vel, dts));
+              this.rotation += this.rotationSpeed * dts;
+              if (
+                this.pos.x > this.ctx.canvas.width ||
+                this.pos.y > this.ctx.canvas.height ||
+                this.pos.x &lt; 0 ||
+                this.pos.y &lt; 0
+              ) {
+                this.isActive = false;
+              }
+            }
+
+
+            // Game.ts
+            private loop = (ms: number): void => {
+              requestAnimationFrame(this.loop);
+          
+              const dt = ms - this.lastTime;
+              const dts = dt / 1000;
+              this.lastTime = ms;
+          
+              this.removeInactive(this.projectiles);
+              this.update(dts);
+              this.draw();
+            };
+
+            // ...
+
+            private removeInactive(items: {isActive: boolean}[]) {
+              items = items.filter(item => item.isActive);
+            }
+          </code>
+        </pre>
+        <p>
+          Pop a <code class="lang-typescript">console.log(this.projectiles.length)</code> at the top of the <code class="lang-typescript">Game.loop</code> and you'll find that we're successfully removing all our out-of-bounds projectiles, keeping our game running smoothly.
+        </p>
+        <p>
+          Now we have projectiles, but they pass right through our enemies. In the next section, we'll implement collision detection and resolution between projectiles and enemies.
+        </p>
         <a href="05-enemies.html">Previous</a>
-        <!-- <a href="07-collision-detection-1">Next</a> -->
+        <a href="07-collision-detection-1.html">Next</a>
       </section>
     </article>
     <script src="libs/prism.js"></script>
