@@ -230,16 +230,10 @@
               const dts = dt / 1000;
               this.lastTime = ms;
           
-              this.removeInactive(this.projectiles);
+              this.projectiles = this.projectiles.filter(projectile => projectile.isActive);
               this.update(dts);
               this.draw();
             };
-
-            // ...
-
-            private removeInactive(items: {isActive: boolean}[]) {
-              items = items.filter(item => item.isActive);
-            }
           </code>
         </pre>
         <p>

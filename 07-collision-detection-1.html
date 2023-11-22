@@ -15,9 +15,184 @@
     <article>
       <h1>Collisions Pt. 1</h1>
       <section>
-        
-        <a href="05-enemies.html">Previous</a>
-        <a href="07-collision-detection-1.html">Next</a>
+        <p>
+          Collision detection between our projectiles and enemies is a breeze,
+          as circle to circle collision detection is very simple. All we have to
+          do is find the distance between the two circles' centers, (which we
+          can do with the Pythagorean theorem, much as we did to find the
+          magnitude of a vector), and check that against their combined radii.
+          If the distance is less than or equal to their combined radii, we know
+          the circles must overlap. Here's a little proof of concept to
+          demonstrate this in action:
+        </p>
+        <pre>
+          <code class="lang-javascript">
+            // setup
+            const canvas = document.querySelector("canvas");
+            const ctx = canvas.getContext("2d");
+            ctx.font = "24px monospace";
+            ctx.textAlign = "center";
+
+            const circle1 = {
+              x: canvas.width / 2,
+              y: canvas.height / 2,
+              radius: 100,
+            };
+
+            const circle2 = {
+              x: 0,
+              y: 0,
+              radius: 100,
+            };
+
+            document.addEventListener("mousemove", (evt) => {
+              const mouse = {
+                x: evt.offsetX,
+                y: evt.offsetY,
+              };
+
+              circle2.x = mouse.x;
+              circle2.y = mouse.y;
+            });
+
+            requestAnimationFrame(animate);
+
+            function animate() {
+              requestAnimationFrame(animate);
+
+              // clear canvas
+              ctx.fillStyle = "black";
+              ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+              // detect collisiion
+              const distance = distanceBetween(circle1, circle2);
+              const collisionDetected = distance &lt;= circle1.radius + circle2.radius;
+              // resolve collision
+              ctx.fillStyle = "white";
+              ctx.fillText(
+                `Combined radii: 200, Distance: ${distance.toFixed(2)}`,
+                canvas.width / 2,
+                50
+              );
+              ctx.fillStyle = collisionDetected ? "red" : "green";
+
+              // circle1
+              ctx.beginPath();
+              ctx.arc(circle1.x, circle1.y, circle1.radius, 0, Math.PI * 2);
+              ctx.fill();
+
+              // circle2
+              ctx.beginPath();
+              ctx.arc(circle2.x, circle2.y, circle2.radius, 0, Math.PI * 2);
+              ctx.fill();
+            }
+
+            function distanceBetween(circle1, circle2) {
+              const xDist = Math.abs(circle1.x - circle2.x);
+              const yDist = Math.abs(circle1.y - circle2.y);
+              return Math.sqrt(xDist ** 2 + yDist ** 2);
+            }
+          </code>
+        </pre>
+        <video muted controls>
+          <source
+            src="vid/07-collision-detection-1/circle-circle-collision.mp4"
+            type="video/mp4"
+          />
+          Your browser does not support the video tag.
+        </video>
+        <p>
+          Now we can work this into our game. We'll detect collisions between
+          projectiles and enemies, and we'll deactivate any that are involved in
+          a collision. First, we'll add the
+          <code class="lang-typescript">isActive</code> boolean property to the
+          <code class="lang-typescript">Enemy</code> class, just as we did with
+          our projectile. Then we'll detect collisions in our game loop.
+        </p>
+        <pre>
+          <code class="lang-typescript">
+            private loop = (ms: number): void => {
+              // Game.ts
+          
+              private loop = (ms: number): void => {
+                // ...
+            
+                this.projectiles = this.projectiles.filter(projectile => projectile.isActive);
+                this.draw();
+                this.update(dts);
+                this.detectCollisions();
+              };
+
+              private detectCollisions(): void {
+                for (let projectile of this.projectiles) {
+                  for (let enemy of this.enemies) {
+                    if (circleCircleCollisionDetected(projectile, enemy)) {
+                      enemy.isActive = false;
+                      projectile.isActive = false;
+                    }
+                  }
+                }
+              }
+            };
+          </code>
+        </pre>
+        <p>
+          You'll see we're using a new utility function,
+          <code class="lang-typescript">circleCircleCollisionDetected</code>. We
+          saw it in our proof of concept, but let's see it in context here.
+        </p>
+        <pre>
+          <code class="lang-typescript">
+            // utils.ts
+            export function circleCircleCollisionDetected(
+              circle1: { pos: Vec2; radius: number },
+              circle2: { pos: Vec2; radius: number }
+            ): boolean {
+              const distance = Vec2.dist(circle1.pos, circle2.pos);
+              return distance &lt;= circle1.radius + circle2.radius;
+            }
+          </code>
+        </pre>
+        <p>
+          The last new thing you'll see is this static <code class="lang-typescript">Vec2</code> method, <code class="lang-typescript">dist</code>. This is just our Pythagorean theorem distance finder from our proof of concept.
+        </p>
+        <pre>
+          <code class="lang-typescript">
+            // Vec2.ts
+            static dist(v1: Vec2, v2: Vec2): number {
+              const xDist = Math.abs(v1.x - v2.x);
+              const yDist = Math.abs(v1.y - v2.y);
+              return Math.sqrt(xDist ** 2 + yDist ** 2);
+            }
+          </code>
+        </pre>
+        <p>
+          Now, you may be asking yourself, "Checking every projectile against every enemy on every frame of the game... Isn't that kind of expensive?" That's a fantastic question. You have great instincts. Yes, it definitely is. And if we had a much larger game, this would not really be a feasible option. But since we're dealing with such a limited space and such a limited number of enemies and projectiles, it will work fine in this environment. If you're interested in how we might optimize this, you can look up <a href="https://youtu.be/sx4IIQL0x7c?si=kQka3XoTMTyNUd6t">spatial hash grids</a>.
+        </p>
+        <p>
+          Now we're detecting collisions between our projectiles and enemies, and deactivating both if a collision is detected. If you're playing along at home, however, you'll notice that our projectiles disappear from the screen, but our enemies don't. Just as we are filtering out inactive projectiles each frame, we'll need to do the same for our enemies.
+        </p>
+        <pre>
+          <code class="lang-typescript">
+            // Game.ts, loop
+            // ...
+            this.projectiles = this.projectiles.filter(projectile => projectile.isActive);
+            this.enemies = this.enemies.filter(enemy => enemy.isActive);
+            // ...
+          </code>
+        </pre>
+        <video muted controls>
+          <source
+            src="vid/07-collision-detection-1/clearing-blobs.mp4"
+            type="video/mp4"
+          />
+          Your browser does not support the video tag.
+        </video>
+        <p>
+          Take that, blobs! Now that we can wipe out the blobs, the game is a little one-sided. We can hurt them, but they can't hurt us back. In the next section, we'll correct that by implementing collision detection between the enemies and the player.
+        </p>
+        <a href="06-projectiles.html">Previous</a>
+        <a href="08-collision-detection-2.html">Next</a>
       </section>
     </article>
     <script src="libs/prism.js"></script>
