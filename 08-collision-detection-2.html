@@ -14,6 +14,7 @@
     </header>
     <article>
       <h1>Collisions Pt. 2</h1>
+      <h1>TODO refactor vector projection stuff. Turns out the scalar projection forumla is dot(v1, v2) / mag(v2). Our projection only worked because we were working with a unit vector, meaning we would just divide by 1. Maybe make a quick PoC</h1>
       <section>
         <p>
           Determining the distances between circles is very straightforward. It's just the distance from between their centers minus their radii. But how do you find the distance between a circle and a rectangle? A rectangle doesn't have a radius. The distance from the outside edge to the center varies depending on <em>where</em> on the edge we're calculating from. It's kind of a tricky problem, but in our description of the problem, we've already begun to get some idea of how this might work. We have to find out what point on the rectangle is closest to the circle. Then we can get the distance between this point and the center of the circle. If that distance is smaller than the circle's radius, we know that point is inside the circle, and the shapes must be touching.
@@ -365,7 +366,7 @@
         </pre>
         <img src="img/08-collision-detection-2/obb-2.png" alt="obb local axes">
         <p>
-          Now we can see what we mean by the rectangle's "local" axes! Just as with our AABB, the red line is the rectangle's x axis and the blue line is the y axis.
+          Here we can see what we mean by the rectangle's "local" axes!. Just as with our AABB, the red line is the rectangle's x axis and the blue line is the y axis.
         </p>
         <p>
           The <code class="lang-javascript">localXAxis</code> and <code class="lang-javascript">localYAxis</code> variables are unit vectors, calculated much as we calculated the propulsion force direction for our player. Now, you'll notice that when we're drawing the representation of these axes on the screen, we're not drawing the vectors as-is. This is for a couple of reasons. For one thing, a unit vector is only going to be one pixel long, so it won't show up on the screen unless we scale it. In this case, we're actually scaling it in two directions so it takes up the whole width/height of the square. For another, we have to move the origin of this vector to the middle of the rectangle by adding the rectangle's position vector. As always, a vector is just a magnitude and direction, and when we draw it as a position on the canvas, we have to take its origin into account if we want it to be drawn where we expect. You'll see this over and over as we are drawing the vectors used in our calculations.
@@ -395,7 +396,7 @@
         </pre>
         <img src="img/08-collision-detection-2/obb-3.png" alt="D vector">
         <p>
-          Having this vector allows us to perform a great trick. Finding the dot product of two vectors allows us to "project" one vector upon another. Let's look at an illustration.
+          Having this vector allows us to perform a great trick. Using the dot product of two vectors allows us to "project" one vector upon another. The formula for this is <code class="lang-typescript">dot(vector1, vector2) / mag(vector2)</code>Let's look at an illustration.
         </p>
         <img src="img/08-collision-detection-2/projection-1.png" alt="scalar projection">
         <p>
@@ -435,7 +436,7 @@
         </pre>
         <img src="img/08-collision-detection-2/obb-4.png" alt="obb vector projection">
         <p>
-          You can see how we've projected our D vector onto the local axes of the rectangle. This should look <em>very</em> familiar to you. Compare this to our AABB's diagram at this stage:
+          You can see how we've projected our D vector onto the local axes of the rectangle. You'll notice you don't see exactly the formula that we showed earlier for calculating scalar projection. We've left off the division part. Since the magnitude of the vector we're projecting onto is 1, it won't have any affect on our calculation. Comparing this illustration to our AABB's diagram at this stage should look <em>very</em> familiar:
         </p>
         <img src="img/08-collision-detection-2/aabb-3.png" alt="aabb axis projections">
         <p>
