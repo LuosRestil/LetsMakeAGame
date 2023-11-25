@@ -15,9 +15,161 @@
     <article>
       <h1>Levels and Scoring</h1>
       <section>
-        
+        <p>
+          Time to set up levels and scoring! Scoring will be really simple, so
+          let's start with that. We're going to take a point away for every
+          projectile fired, (to disincentivize too much blasting away randomly),
+          and add points for each enemy hit, scaled by the enemy's stage.
+        </p>
+        <pre>
+          <code class="lang-typescript">
+            // Game.ts
+            // setup
+            score: number = 0;
+
+            private detectCollisions(): void {
+              for (let projectile of this.projectiles) {
+                for (let enemy of this.enemies) {
+                  if (circleCircleCollisionDetected(projectile, enemy)) {
+                    projectile.isActive = false;
+                    enemy.requiredHits--;
+                    this.score += 10 * enemy.stage;
+                    // ...
+                  }
+                }
+              }
+              // ...
+            }
+
+
+            // Player.ts
+            private fire(): void {
+              if (this.game.score > 0) this.game.score--;
+              // ...
+            }
+          </code>
+        </pre>
+        <p>
+          We also have to remember to reset the score after the player is
+          destroyed.
+        </p>
+        <pre>
+          <code class="lang-typescript">
+            // Game.ts
+            private refresh(): void {
+              this.score = 0;
+              // ...
+            }
+          </code>
+        </pre>
+        <p>
+          Okay, so we have a score, but we have no way of knowing what it is, so let's display it on the screen.
+        </p>
+        <pre>
+          <code class="lang-typescript">
+            // Game.ts
+            private draw(): void {
+              // ...
+              this.showScore();
+            }
+
+            private showScore(): void {
+              this.ctx.fillStyle = "white";
+              this.ctx.strokeStyle = "black";
+              this.ctx.lineWidth = 5;
+              this.ctx.textAlign = "right";
+              this.ctx.font = "30px monospace";
+              this.ctx.strokeText("Score: " + this.score, this.ctx.canvas.width - 50, 50);
+              this.ctx.fillText("Score: " + this.score, this.ctx.canvas.width - 50, 50);
+            }
+          </code>
+        </pre>
+        <video muted controls>
+          <source
+            src="vid/11-levels-and-scoring/scoring.mp4"
+            type="video/mp4"
+          />
+          Your browser does not support the video tag.
+        </video>
+        <p>
+          And just like that, we have the scoring for our game. You'll notice at the end of this clip that our player's rotation isn't being reset when we restart the game. Oops! Let's fix that real quick.
+        </p>
+        <pre>
+          <code class="lang-typescript">
+            private resetPlayer(): void {
+              this.player.pos = new Vec2(
+                this.ctx.canvas.width / 2,
+                this.ctx.canvas.height / 2
+              );
+              this.player.vel = new Vec2(0, 0);
+              this.palyer.rotation = 0;
+            }
+          </code>
+        </pre>
+        <p>
+          Now let's take care of levels. We'll add a <code class="lang-typescript">level</code> property to our <code class="lang-typescript">Game</code> class, initialized at 1, and we'll increment it every time the player has cleared all the enemies. Then we'll use that level to determine how many enemies to spawn.
+        </p>
+        <pre>
+          <code class="lang-typescript">
+            // Game.ts
+            // setup
+            level: number = 1;
+
+            private loop = (ms: number): void => {
+              // ...
+              if (!this.enemies.length) {
+                this.level++;
+                // ...
+              }
+            }
+
+            private spawnEnemies(): Enemy[] {
+              let enemies = [];
+              for (let i = 0; i &lt; this.level * 2; i++) {
+                enemies.push(new Enemy(this.ctx, new Vec2(0, 0), 1, 1));
+              }
+              return enemies;
+            }
+          </code>
+        </pre>
+        <p>
+          I've arbitrarily chosen to spawn <code class="lang-typescript">level * 2</code> enemies, but you could parameterize this number instead of hard coding it, or choose another method altogether to determine how many enemies to spawn.
+        </p>
+        <p>
+          Just as we show our score, we should probably show our level as well. Let's do that.
+        </p>
+        <pre>
+          <code class="lang-typescript">
+            // Game.ts
+            private draw(): void {
+              // ...
+              this.showScore();
+              this.showLevel();
+            }
+
+            private showLevel(): void {
+              this.ctx.fillStyle = "white";
+              this.ctx.strokeStyle = "black";
+              this.ctx.lineWidth = 5;
+              this.ctx.textAlign = "left";
+              this.ctx.font = "30px monospace";
+              this.ctx.strokeText("Level: " + this.level, 50, 50);
+              this.ctx.fillText("Level: " + this.level, 50, 50);
+            }
+          </code>
+        </pre>
+        <video muted controls>
+          <source
+            src="vid/11-levels-and-scoring/level.mp4"
+            type="video/mp4"
+          />
+          Your browser does not support the video tag.
+        </video>
+        <p>
+          Tada! Levels and scoring are in place. We almost have a "complete", (as in fully playable, there's still lots of room for polish), game! All we're really missing is a title screen. We'll add this in the next section.
+        </p>
         <a href="10-enemy-enhancement.html">Previous</a>
-        <!-- <a href="">Next</a> -->
+        <a href="12-title-screen.html">Next</a>
       </section>
     </article>
     <script src="libs/prism.js"></script>
