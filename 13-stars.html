@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Stars - Let's Make A Game</title>
+    <link rel="stylesheet" href="libs/prism.css" />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <header>
+      <div id="title">Let's Make A Game</div>
+      <nav id="nav"></nav>
+    </header>
+    <article>
+      <h1>Stars</h1>
+      <section>
+        <p>
+          Our game takes place in space, but our background is just plain black. We could make this look a whole lot nicer with some stars. Let's make some!
+        </p>
+        <p>
+          These stars won't be changing throughout the game, so there's no reason for us to waste compute in drawing them every frame. What we'll do is employ a second background canvas that we just draw to once, and our game canvas will sit on top of that.
+        </p>
+        <p>
+          First, we'll add a new canvas to our <code class="lang-html">game-container</code>.
+        </p>
+        <pre>
+          <code class="lang-html">
+            &lt;!-- index.html --&gt;
+            &lt;div id="game-container">
+              &lt;div id="title-screen">
+                &lt;div>Rudolph VS The Blobs&lt;/div>
+                &lt;div>Press R To Start&lt;/div>
+              &lt;/div>
+              &lt;canvas id="bg-canvas">&lt;/canvas>
+              &lt;canvas id="game-canvas">&lt;/canvas>
+            &lt;/div>
+          </code>
+        </pre>
+        <p>
+          Then we'll add styles to let our other elements rest on top of it.
+        </p>
+        <pre>
+          <code class="lang-css">
+            /* style.css */
+            #game-container {
+              /* ... */
+              position: relative;
+            }
+
+            #title-screen {
+              /* ... */
+              z-index: 1;
+              position: relative;
+            }
+
+            #game-canvas {
+              display: none;
+              z-index: 1;
+              position: relative;
+            }
+
+            #bg-canvas {
+              position: absolute;
+              top: 0px;
+              left: 0px;
+            }
+          </code>
+        </pre>
+        <p>
+          There's a little CSS quirk that's worth mentioning in this code. To ensure that title screen and game canvas are rendered on top of our background canvas, we've added a <code class="lang-css">z-index</code> property to both of them. <em>BUT</em>, to make z-index work, we have to explicitly declare a <code class="lang-css">position</code> property for the selector that we're using <code class="lang-css">z-index</code> on. Just one of the myriad gotchas that make CSS such a joy to work with... We've also added <code class="lang-css">position: relative</code> to the <code class="lang-css">#game-container</code>, because <code class="lang-css">position: absolute</code> positions an element <em>relative to its nearest positioned ancestor</em>, meaning if we don't add an appropriate position to the <code class="lang-css">#game-container</code>, our <code class="lang-css">#bg-canvas</code> will be positioned relative to the window instead.
+        </p>
+        <p>
+          Now that we have our surface, let's draw some stars on it.
+        </p>
+        <pre>
+          <code class="lang-typescript">
+            // main.ts
+            // ...
+            const bgcanvas = document.getElementById("bg-canvas") as HTMLCanvasElement;
+            bgcanvas.width = 1280;
+            bgcanvas.height = 720;
+            const bgctx = bgcanvas.getContext("2d") as CanvasRenderingContext2D;
+            // draw starfield
+            bgctx.fillStyle = "#555";
+            for (let i = 0; i &lt; 550; i++) {
+              const x = Math.random() * bgcanvas.width;
+              const y = Math.random() * bgcanvas.height;
+              const radius = Math.random() * 3;
+              bgctx.beginPath();
+              bgctx.arc(x, y, radius, 0, Math.PI * 2);
+              bgctx.fill();
+            }
+          </code>
+        </pre>
+        <img src="img/13-stars/starry-title.png" alt="title screen with stars">
+        <p>
+          Looks pretty good! We've used grey instead of white for the stars so they're not too present and distracting. We're just creating circles with a radius between 0 and 3 at random locations on our canvas. We've structured this so that it will work during the game as well.
+        </p>
+        <img src="img/13-stars/starry-game.png" alt="gameplay with stars">
+        <p>
+          We could stop here, but I'd like to try to add a little visual interest to our admittedly-still-pretty-boring title screen by making the stars scroll across the screen. Instead of displaying the stars immediately as they're generated, let's save their information in an array so we can update their positions over time.
+        </p>
+        <pre>
+          <code class="lang-typescript">
+            // main.ts
+            // ...
+            // create starfield
+            let starfield: { pos: Vec2; radius: number }[] = [];
+            for (let i = 0; i &lt; 550; i++) {
+              const x = Math.random() * bgcanvas.width;
+              const y = Math.random() * bgcanvas.height;
+              const radius = Math.random() * 3;
+              starfield.push({pos: new Vec2(x, y), radius});
+            }
+          </code>
+        </pre>
+        <p>
+          Now let's move the stars across the screen.
+        </p>
+        <pre>
+          <code class="lang-typescript">
+            // main.ts
+            // imports...
+            let gameStarted = false;
+            // ...
+
+            function startGame(evt: KeyboardEvent): void {
+              if (evt.key === "r") {
+                // ...
+                gameStarted = true;
+              }
+            }
+
+            // ...
+
+            let lastTime = 0;
+            let starSpeed = 30;
+            function animate(ms: number): void {
+              if (gameStarted) return;
+
+              requestAnimationFrame(animate);
+
+              const dt = ms - lastTime;
+              const dts = dt / 1000;
+              lastTime = ms;
+
+              bgctx.clearRect(0, 0, bgcanvas.width, bgcanvas.height);
+              for (let star of starfield) {
+                // update
+                star.pos.x -= starSpeed * dts;
+                screenWrap(star, bgctx);
+                // draw
+                bgctx.beginPath();
+                bgctx.arc(star.pos.x, star.pos.y, star.radius, 0, Math.PI * 2);
+                bgctx.fill();
+              }
+            }
+            requestAnimationFrame(animate);
+          </code>
+        </pre>
+        <p>
+          This is more or less a copy of our game loop, just a little smaller. Each animation frame, we clear our background canvas and move/draw each star in turn. We've added a <code class="lang-typescript">gameStarted</code> flag to allow us to break out of our animation loop once the game starts. It would be too distracting to have the stars move during gameplay, so this will freeze them in place.
+        </p>
+        <video muted controls>
+          <source src="vid/13-stars/moving-stars.mp4" type="video/mp4" />
+          Your browser does not support the video tag.
+        </video>
+        <p>
+          We now have a much nicer background than before. Next, we'll start looking at particle effects so we can add some satisfying splats when an enemy (or the player) is destroyed, as well as a propulsion indicator for our player.
+        </p>
+        <a href="12-title-screen.html">Previous</a>
+        <a href="14-particle-systems.html">Next</a>
+      </section>
+    </article>
+    <script src="libs/prism.js"></script>
+  </body>
+</html>

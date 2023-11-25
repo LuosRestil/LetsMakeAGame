@@ -20,7 +20,7 @@
         </p>
         <pre>
           <code class="lang-html">
-            <!-- index.html -->
+            &lt;!-- index.html --&gt;
             &lt;body>
               &lt;div id="game-container">
                 &lt;div id="title-screen">
@@ -67,7 +67,7 @@
 
             const titleScreen = document.getElementById("title-screen") as HTMLDivElement;
 
-            function startGame(evt: KeyboardEvent) {
+            function startGame(evt: KeyboardEvent): void {
               if (evt.key === "r") {
                 const canvas = document.getElementById("game-canvas") as HTMLCanvasElement;
                 canvas.width = 1280;
