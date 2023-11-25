@@ -160,7 +160,7 @@
           </code>
         </pre>
         <p>
-          This is more or less a copy of our game loop, just a little smaller. Each animation frame, we clear our background canvas and move/draw each star in turn. We've added a <code class="lang-typescript">gameStarted</code> flag to allow us to break out of our animation loop once the game starts. It would be too distracting to have the stars move during gameplay, so this will freeze them in place.
+          This is more or less a copy of our game loop, just a little smaller. Each animation frame, we clear our background canvas and move/draw each star in turn. By giving each star a <code class="lang-typescript">pos: Vec2</code>, we can make use of our existing <code class="lang-typescript">screenWrap</code> function to have infinite scrolling. We've added a <code class="lang-typescript">gameStarted</code> flag to allow us to break out of our animation loop once the game starts. It would be too distracting to have the stars move during gameplay, so this will freeze them in place.
         </p>
         <video muted controls>
           <source src="vid/13-stars/moving-stars.mp4" type="video/mp4" />
