@@ -133,8 +133,21 @@
           </code>
         </pre>
         <p>
-          I've arbitrarily chosen to spawn <code class="lang-typescript">level * 2</code> enemies, but you could parameterize this number instead of hard coding it, or choose another method altogether to determine how many enemies to spawn.
+          I've arbitrarily chosen to spawn <code class="lang-typescript">level * 2</code> enemies, but you could parameterize this number instead of hard coding it, or choose another method altogether to determine how many enemies to spawn. You could also choose some other/additional way to make the game incrementally more difficult. For example, you could increase the speed of the enemies, or increase the odds of spawning tougher enemies. 
         </p>
+        <p>
+          Let's not forget that we'll have to reset our level when we restart the game.
+        </p>
+        <pre>
+          <code class="lang-typescript">
+            // Game.ts
+            private refresh(): void {
+              this.score = 0;
+              this.level = 1;
+              // ...
+            }
+          </code>
+        </pre>
         <p>
           Just as we show our score, we should probably show our level as well. Let's do that.
         </p>

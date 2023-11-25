@@ -20,9 +20,9 @@
           First order of business, we need to create a canvas to draw on. So let's do that. In our <code class="lang-markup">index.html</code> file, let's give ourselves a <code class="lang-markup">canvas</code> element inside a container div.
         </p>
         <pre>
-          <code class="lang-markup">
+          <code class="lang-html">
             &lt;body>
-              &lt;div id="canvas-container">
+              &lt;div id="game-container">
                 &lt;canvas id="game-canvas">&lt;/canvas>
               &lt;/div>
               &lt;script type="module" src="/src/main.ts">&lt;/script>
@@ -50,7 +50,7 @@
               background-color: grey;
             }
             
-            #canvas-container {
+            #game-container {
               margin: auto;
               width: 1280px;
               height: 720px;
