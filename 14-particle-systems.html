@@ -15,9 +15,566 @@
     <article>
       <h1>Particle Systems</h1>
       <section>
-        
+        <p>
+          Particle systems are a really versatile tool for improving a game's
+          look and feel. We can use them to create fire and smoke, water spray,
+          dust kicked up from a running player's heels. The concept is almost
+          fully explained by its name. It's just a grouping of "particles". We
+          can govern the look and behavior of these particles to achieve our
+          desired effect. Let's make a little proof of concept to get our heads
+          around the how this works.
+        </p>
+        <pre>
+          <code class="lang-javascript">
+            // script
+            const canvas = document.querySelector('canvas');
+            const ctx = canvas.getContext('2d');
+            
+            class Particle {
+              pos;
+              vel;
+
+              constructor(pos, vel) {
+                this.pos = pos;
+                this.vel = vel;
+              }
+
+              update(dts) {
+                this.pos.x += this.vel.x * dts;
+                this.pos.y += this.vel.y * dts;
+              }
+
+              draw() {
+                ctx.fillStyle = 'white';
+                ctx.fillRect(this.pos.x, this.pos.y, 10, 10);
+              }
+            }
+      
+            class ParticleSystem {
+              pos;
+              particles = [];
+
+              constructor(pos) {
+                this.pos = pos;
+              }
+
+              step(dts) {
+                for (let particle of this.particles) {
+                  particle.update(dts);
+                  particle.draw();
+                }
+              }
+            }
+          </code>
+        </pre>
+        <p>
+          Here's our basic setup. We're going to have some kind of
+          <code class="lang-javascript">Particle</code> and a
+          <code class="lang-javascript">ParticleSystem</code> that manages a
+          group of these particles. The
+          <code class="lang-javascript">Particle</code> code should be old hat
+          to us by now. We've seen this
+          <code class="lang-javascript">update</code> by adding velocity to
+          position and scaling by delta time, then
+          <code class="lang-javascript">draw</code> behavior about a thousand
+          times now.
+        </p>
+        <p>
+          There aren't any particles in our particle system just yet. We'll
+          begin spawning particles from the position of the particle system at a
+          fixed time interval, moving at a random velocity.
+        </p>
+        <pre>
+          <code class="lang-javascript">
+            class ParticleSystem {
+              pos;
+              particles = [];
+              minVel = -50;
+              maxVel = 50;
+              spawnRate = 100; // in milliseconds
+              lastSpawnTime = 0;
+      
+              constructor(pos) {
+                this.pos = pos;
+              }
+      
+              step(ms, dts) {
+                const timeSinceSpawn = ms - this.lastSpawnTime;
+                if (timeSinceSpawn > this.spawnRate) {
+                  this.spawnParticle();
+                  this.lastSpawnTime = ms - (ms % this.spawnRate);
+                }
+      
+                for (let particle of this.particles) {
+                  particle.update(dts);
+                  particle.draw();
+                }
+              }
+      
+              spawnParticle() {
+                // get random values in range minVel...maxVel
+                const velX =
+                  this.minVel + Math.random() * (this.maxVel - this.minVel);
+                const velY =
+                  this.minVel + Math.random() * (this.maxVel - this.minVel);
+      
+                this.particles.push(
+                  new Particle({ x: this.pos.x, y: this.pos.y }, { x: velX, y: velY })
+                );
+              }
+            }
+          </code>
+        </pre>
+        <p>
+          Each animation frame, we'll
+          <code class="lang-javascript">step</code> our particle system. It will
+          keep track of the last timestamp that spawned a particle, and each
+          frame it will see if it's time to spawn another one. This funky line
+          <code class="lang-javascript"
+            >this.lastSpawnTime = ms - (ms % this.spawnRate);</code
+          >
+          is compensating for the fact that each frame has a jump in the
+          timestamp, and we're likely to overshoot our next spawn time. In that
+          event, we'll step our timestamp back by the amount that it overshot
+          before setting the <code class="lang-javascript">lastSpawnTime</code>.
+          This keeps our spawn interval accurate. Let's run this particle system
+          and see what happens.
+        </p>
+        <pre>
+          <code class="lang-javascript">
+            const ps = new ParticleSystem({
+              x: canvas.width / 2,
+              y: canvas.height / 2,
+            });
+      
+            let lastTime = 0;
+      
+            requestAnimationFrame(animate);
+      
+            function animate(ms) {
+              requestAnimationFrame(animate);
+      
+              const dts = (ms - lastTime) / 1000;
+              lastTime = ms;
+      
+              ctx.fillStyle = "black";
+              ctx.fillRect(0, 0, canvas.width, canvas.height);
+              ps.step(ms, dts);
+            }
+          </code>
+        </pre>
+        <video muted controls>
+          <source src="vid/14-particle-systems/poc-1.mp4" type="video/mp4" />
+          Your browser does not support the video tag.
+        </video>
+        <p>
+          Well, it's a particle system. It's not terribly impressive, but we
+          have all the raw ingredients here to do much more exciting things.
+          Let's make some tweaks. The first thing we can do is give these
+          particles a lifespan, so we don't just fill the screen with them.
+          We'll also tweak the particle size and spawnRate so it doesn't look so
+          lethargic.
+        </p>
+        <pre>
+          <code class="lang-javascript">
+            class Particle {
+              pos;
+              vel;
+              lifespan; // in milliseconds
+              createdTime; // ms timestamp
+              isActive = true;
+              size = 5;
+      
+              constructor(pos, vel, lifespan, createdTime) {
+                this.pos = pos;
+                this.vel = vel;
+                this.lifespan = lifespan;
+                this.createdTime = createdTime;
+              }
+      
+              update(ms, dts) {
+                this.pos.x += this.vel.x * dts;
+                this.pos.y += this.vel.y * dts;
+      
+                // deactivate if lifespan expired
+                if (ms - this.createdTime > this.lifespan) this.isActive = false;
+              }
+      
+              draw() {
+                ctx.fillStyle = "white";
+                ctx.fillRect(this.pos.x, this.pos.y, this.size, this.size);
+              }
+            }
+          </code>
+        </pre>
+        <p>
+          We've added a <code class="lang-javascript">lifespan</code> and
+          <code class="lang-javascript">createdTime</code>. Each frame, we'll
+          check the current timestamp against the time the particle was created,
+          and we'll deactivate it if the difference is greater than the
+          particles <code class="lang-javascript">lifespan</code>. Another thing
+          we could do is add transparency to our particles, with the level
+          linearly interpolated according to how close we are to reaching the
+          <code class="lang-javascript">lifespan</code>, or according to
+          distance from the particle system's origin.
+        </p>
+        <pre>
+          <code class="lang-javascript">
+            class ParticleSystem {
+              // ...
+              spawnRate = 5; // in milliseconds
+              // ...
+      
+              // constructor...
+      
+              step(ms, dts) {
+                const timeSinceSpawn = ms - this.lastSpawnTime;
+                if (timeSinceSpawn > this.spawnRate) {
+                  this.spawnParticle(ms);  // passing in the timestamp now
+                  this.lastSpawnTime = ms - (ms % this.spawnRate);
+                }
+      
+                this.particles = this.particles.filter(particle => particle.isActive);
+      
+                for (let particle of this.particles) {
+                  particle.update(ms, dts);
+                  particle.draw();
+                }
+              }
+      
+              spawnParticle(ms) {
+                // get random values in range minVel...maxVel
+                const velX =
+                  this.minVel + Math.random() * (this.maxVel - this.minVel);
+                const velY =
+                  this.minVel + Math.random() * (this.maxVel - this.minVel);
+      
+                this.particles.push(
+                  new Particle(
+                    { x: this.pos.x, y: this.pos.y },
+                    { x: velX, y: velY },
+                    1000, // passing lifespan now
+                    ms // passing timestamp now
+                  )
+                );
+              }
+            }
+          </code>
+        </pre>
+        <p>
+          We've lowered the <code class="lang-javascript">spawnRate</code>, so
+          we're generating a lot more particles. We're also passing the
+          <code class="lang-javascript">ms</code> timestamp to
+          <code class="lang-javascript">spawnParticles</code> so it will be
+          available to pass to the
+          <code class="lang-javascript">Particle</code> constructor as the
+          <code class="lang-javascript">createdTime</code>, (along with our new
+          <code class="lang-javascript">lifespan</code>). Finally, we're
+          filtering out inactive particles each frame.
+        </p>
+        <video muted controls>
+          <source src="vid/14-particle-systems/poc-2.mp4" type="video/mp4" />
+          Your browser does not support the video tag.
+        </video>
+        <p>
+          Looks a little more like... something. I dont' know what, but
+          certainly more like something than before. Let's try adding some
+          color.
+        </p>
+        <pre>
+          <code class="lang-javascript">
+            class Particle {
+              // ...
+              color;
+
+              constructor(pos, vel, lifespan, createdTime) {
+                // ...
+                // random range 25...60
+                const randColor = 25 + Math.random() * 45;
+                this.color = `hsl(${randColor}, 100%, 50%)`;
+              }
+            }
+          </code>
+        </pre>
+        <video muted controls>
+          <source src="vid/14-particle-systems/poc-3.mp4" type="video/mp4" />
+          Your browser does not support the video tag.
+        </video>
+        <p>
+          With a little imagination, you could see how this could be some kind
+          of lo-fi torch or sparkler. Let's see if we can make this a little
+          more torch-like.
+        </p>
+        <p>
+          To start with, let's add some upward force to the particles to
+          simulate the rising of flames/sparks. And while we're at it, let's
+          draw a crude torch behind the particles. We'll also need more
+          particles than we're currently generating. We're limited by our
+          framerate if we're creating one particle at a time, so let's bump that
+          up.
+        </p>
+        <pre>
+          <code class="lang-javascript">
+            // ParticleSystem
+            spawnParticle(ms) {
+              for (let i = 0; i &lt; 3; i++) {
+                // spawn particle...
+              }
+            }
+
+
+            // Particle
+            update(ms, dts) {
+              this.vel.y -= 130 * dts;
+              // ...
+            }
+
+            
+            function animate(ms) {
+              requestAnimationFrame(animate);
+
+              const dts = (ms - lastTime) / 1000;
+              lastTime = ms;
+
+              ctx.fillStyle = "black";
+              ctx.fillRect(0, 0, canvas.width, canvas.height);
+              ctx.fillStyle = "brown";
+              ctx.fillRect(canvas.width / 2 - 4, canvas.height / 2, 8, 100);
+              ctx.beginPath();
+              ctx.ellipse(
+                canvas.width / 2,
+                canvas.height / 2,
+                10,
+                20,
+                0,
+                0,
+                Math.PI * 2
+              );
+              ctx.fillStyle = "grey";
+              ctx.fill();
+
+              ps.step(ms, dts);
+            }
+          </code>
+        </pre>
+        <p>
+          The torch is just a brown rect and a grey ellipse. The upward force is
+          just added to the velocity before the velocity is added to the
+          position, (just as we did for our player's propulsion force, just a
+          lot easier to calculate).
+        </p>
+        <video muted controls>
+          <source src="vid/14-particle-systems/poc-4.mp4" type="video/mp4" />
+          Your browser does not support the video tag.
+        </video>
+        <p>
+          That's a little better. Let's add some transparency to the particles
+          as they near the end of their
+          <code class="lang-javascript">lifespan</code>, as I suggested earlier.
+        </p>
+        <pre>
+          <code class="lang-javascript">
+            class Particle {
+              pos;
+              vel;
+              lifespan; // in milliseconds
+              createdTime; // ms timestamp
+              isActive = true;
+              size = 5;
+              hue;
+              a;
+      
+              constructor(pos, vel, lifespan, createdTime) {
+                this.pos = pos;
+                this.vel = vel;
+                this.lifespan = lifespan;
+                this.createdTime = createdTime;
+                // random range 25...60
+                this.hue = 25 + Math.random() * 45;
+                this.a = 1;
+              }
+
+              update() {
+                // ...
+                // deactivate if lifespan expired
+                const timeSinceCreation = ms - this.createdTime;
+                if (timeSinceCreation > this.lifespan) this.isActive = false;
+                const pct = timeSinceCreation / this.lifespan
+                this.a = 1 - pct;
+              }
+
+              draw() {
+                ctx.fillStyle = `hsla(${this.hue}, 100%, 50%, ${this.a})`;
+                ctx.fillRect(this.pos.x, this.pos.y, this.size, this.size);
+              }
+          </code>
+        </pre>
+        <p>
+          We've replaced <code class="lang-javascript">color</code>, which will
+          now change over time, with <code class="lang-javascript">hue</code>,
+          which can remain steady. We're dividing the time that has elapsed
+          since the particle was created by the particle's lifespan in order to
+          figure out what percentage the particle is through its life. A brand
+          new particle will give us a 0 here, while a particle that's ready to
+          be deactivated will give us a 1. We want our transparency to be the
+          reverse of this, with a value of 1, (fully opaque), for a brand new
+          particle, fading to 0 over time. This means we can calculate our
+          transparency as 1 minus the percentage the particle is through its
+          life. Then we update the
+          <code class="lang-javascript">draw</code> method to use our new
+          <code class="lang-javascript">hue</code> and transparency values.
+        </p>
+        <video muted controls>
+          <source src="vid/14-particle-systems/poc-5.mp4" type="video/mp4" />
+          Your browser does not support the video tag.
+        </video>
+        <p>
+          It's not perfect, but it is a pretty cool effect. Let's try adding a
+          wind force to the particles now, coming from the direction of the
+          mouse so we can see it move at different angles.
+        </p>
+        <pre>
+          <code class="lang-javascript">
+            // just below canvas setup...
+            let mouse = {x: 0, y: 0};
+            document.addEventListener('mousemove', (evt) => {
+              mouse = {x: evt.offsetX, y: evt.offsetY};
+            });
+            const windStrength = 200;
+            // ...
+
+            
+            function animate(ms) {
+              // ...
+              // vector pointing from mouse to torch
+              const D = {x: ps.pos.x - mouse.x, y: ps.pos.y - mouse.y};
+              const mag = Math.sqrt(D.x**2 + D.y**2);
+              // normalize and scale by windForce
+              const wind = {x: (D.x/mag) * windMag, y: (D.y/mag) * windMag};
+
+              ps.step(ms, dts, wind);
+            }
+
+
+            // ParticleSystem
+            step(ms, dts, wind) {
+              // ...
+              for (let particle of this.particles) {
+                particle.update(ms, dts, wind);
+                particle.draw();
+              }
+            }
+
+
+            // Particle
+            update(ms, dts, wind) {
+              this.vel.y -= 130 * dts;
+              this.vel.x += wind.x * dts;
+              this.vel.y += wind.y * dts;
+              this.pos.x += this.vel.x * dts;
+              this.pos.y += this.vel.y * dts;
+              // ...
+            }
+          </code>
+        </pre>
+        <p>
+          We're creating a vector pointing from the mouse to the torch by
+          subtracting the mouse position from the particle system position, then
+          normalizing and scaling it to a wind strength of our choosing. Then we
+          pass that wind force through the particle system's
+          <code class="lang-javascript">step</code> call, into each particle's
+          <code class="lang-javascript">update</code> call, and apply it just
+          like our upward force.
+        </p>
+        <video muted controls>
+          <source src="vid/14-particle-systems/poc-6.mp4" type="video/mp4" />
+          Your browser does not support the video tag.
+        </video>
+        <p>
+          It's not perfectly realistic or anything, but I think it looks good. I
+          think the hacked together torch is more of an aesthetic bottleneck
+          than the particle system. Just for fun, let's make a bunch of them.
+          We'll create a Torch class, and we'll add a new torch to the screen on
+          click.
+        </p>
+        <pre>
+          <code class="lang-javascript">
+            // just below canvas setup...
+            let torches = [];
+            let mouse = { x: 0, y: 0 };
+            document.addEventListener("mousemove", (evt) => {
+              mouse = { x: evt.offsetX, y: evt.offsetY };
+            });
+            document.addEventListener("click", (evt) => {
+              torches.push(new Torch({ x: evt.offsetX, y: evt.offsetY }));
+            });
+            const windStrength = 200;
+            // ...
+
+
+            class Torch {
+              pos;
+              particleSystem;
+      
+              constructor(pos) {
+                this.pos = pos;
+                this.particleSystem = new ParticleSystem(this.pos);
+              }
+      
+              step(ms, dts, wind) {
+                ctx.fillStyle = "brown";
+                ctx.fillRect(this.pos.x - 3, this.pos.y, 6, 75);
+                ctx.beginPath();
+                ctx.ellipse(this.pos.x, this.pos.y, 8, 15, 0, 0, Math.PI * 2);
+                ctx.fillStyle = "grey";
+                ctx.fill();
+                this.particleSystem.step(ms, dts, wind);
+              }
+            }
+
+
+            function animate(ms) {
+              requestAnimationFrame(animate);
+      
+              const dts = (ms - lastTime) / 1000;
+              lastTime = ms;
+      
+              ctx.fillStyle = "black";
+              ctx.fillRect(0, 0, canvas.width, canvas.height);
+      
+              for (let torch of torches) {
+                const D = { x: torch.pos.x - mouse.x, y: torch.pos.y - mouse.y };
+                const mag = Math.sqrt(D.x ** 2 + D.y ** 2);
+                const wind = {
+                  x: (D.x / mag) * windStrength,
+                  y: (D.y / mag) * windStrength,
+                };
+      
+                torch.step(ms, dts, wind);
+              }
+            }
+          </code>
+        </pre>
+        <p>
+          We now have an array of torches, and we're creating new ones on click.
+          A torch is basically just a wrapper for our particle system, with a
+          little exta bit of drawing. (We've made it smaller here than we had it
+          earlier, in a shoddy attempt to make it look a little nicer). Now we
+          can make a bunch of torches and see them all respond to a wind force
+          from the direction of the mouse.
+        </p>
+        <video muted controls>
+          <source src="vid/14-particle-systems/poc-7.mp4" type="video/mp4" />
+          Your browser does not support the video tag.
+        </video>
+        <p>
+          Now we have a rudimentary understanding of particle systems and a
+          little practice under our belts. In the next section, we'll finally
+          add the splats and propulsion particles we mentioned in the previous
+          section.
+        </p>
         <a href="13-stars.html">Previous</a>
-        <!-- <a href="">Next</a> -->
+        <a href="15-sparkles-and-splats.html">Next</a>
       </section>
     </article>
     <script src="libs/prism.js"></script>

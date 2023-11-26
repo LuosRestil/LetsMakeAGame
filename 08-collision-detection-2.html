@@ -14,7 +14,6 @@
     </header>
     <article>
       <h1>Collisions Pt. 2</h1>
-      <h1>TODO refactor vector projection stuff. Turns out the scalar projection forumla is dot(v1, v2) / mag(v2). Our projection only worked because we were working with a unit vector, meaning we would just divide by 1. Maybe make a quick PoC</h1>
       <section>
         <p>
           Determining the distances between circles is very straightforward. It's just the distance from between their centers minus their radii. But how do you find the distance between a circle and a rectangle? A rectangle doesn't have a radius. The distance from the outside edge to the center varies depending on <em>where</em> on the edge we're calculating from. It's kind of a tricky problem, but in our description of the problem, we've already begun to get some idea of how this might work. We have to find out what point on the rectangle is closest to the circle. Then we can get the distance between this point and the center of the circle. If that distance is smaller than the circle's radius, we know that point is inside the circle, and the shapes must be touching.
