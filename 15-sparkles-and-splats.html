@@ -15,9 +15,375 @@
     <article>
       <h1>Sparkles and Splats</h1>
       <section>
-        
+        <p>
+          It's time to add some flavor to our game with a couple of particle
+          systems. We're going to create a
+          <code class="lang-typescript">Splat</code> effect when we destroy an
+          enemy or the player, and we're going to make our player shoot rainbow
+          sparkles during propulsion. The
+          <code class="lang-typescript">Splat</code> is the simpler of the two,
+          so let's knock that one out first. We'll create a new file
+          <code class="lang-markup">Splat.ts</code> with two classes,
+          <class class="lang-typescript">SplatParticle</class>, our particle
+          class, (obviously), and <code class="lang-typescript">Splat</code>,
+          our particle system. This is a one-shot system, and won't continually
+          generate particles, but will just generate one batch of particles,
+          then deactivate after a set time.
+        </p>
+        <pre>
+          <code class="lang-typescript">
+            // Splat.ts
+            import { Vec2 } from "./Vec2";
+
+            export class Splat {
+              pos: Vec2;
+              fillColor: string;
+              strokeColor: string;
+              particles: SplatParticle[] = [];
+              particleSpeed = 300;
+              isActive: boolean = true;
+              lifetime: number = 0.25;
+              elapsed: number = 0;
+            
+              constructor(pos: Vec2, fillColor: string, strokeColor: string) {
+                this.pos = pos;
+                this.fillColor = fillColor;
+                this.strokeColor = strokeColor;
+                for (let angle = 0; angle &lt; Math.PI * 2; angle += Math.PI / 4) {
+                  const vel = new Vec2(Math.cos(angle), Math.sin(angle)).scale(
+                    this.particleSpeed
+                  );
+                  this.particles.push(
+                    new SplatParticle(this.pos.copy(), vel, fillColor, strokeColor)
+                  );
+                }
+              }
+            
+              update(dts: number) {
+                for (let particle of this.particles) {
+                  particle.update(dts);
+                }
+                this.elapsed += dts;
+                if (this.elapsed > this.lifetime) this.isActive = false;
+              }
+            
+              draw(ctx: CanvasRenderingContext2D) {
+                for (let particle of this.particles) {
+                  particle.draw(ctx);
+                }
+              }
+            }
+            
+            class SplatParticle {
+              pos: Vec2;
+              vel: Vec2;
+              fillColor: string;
+              strokeColor: string;
+            
+              constructor(pos: Vec2, vel: Vec2, fillColor: string, strokeColor: string) {
+                this.pos = pos;
+                this.vel = vel;
+                this.fillColor = fillColor;
+                this.strokeColor = strokeColor;
+              }
+            
+              update(dts: number): void {
+                this.pos.add(Vec2.scale(this.vel, dts));
+              }
+            
+              draw(ctx: CanvasRenderingContext2D) {
+                ctx.fillStyle = this.fillColor;
+                ctx.strokeStyle = this.strokeColor;
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.arc(this.pos.x, this.pos.y, 5, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+              }
+            }
+          </code>
+        </pre>
+        <p>
+          <code class="lang-typescript">SplatParticle</code> has what we've come to expect from our game objects, a
+          position, a velocity, an
+          <code class="lang-typescript">update</code> method and a
+          <code class="lang-typescript">draw</code> method. We're passing a fill and stroke color in the constructor, (passed down from the
+          <code class="lang-typescript">Splat</code>, which also takes these
+          colors in the constructor), so we can create splats of different
+          colors. The <code class="lang-typescript">draw</code> method just renders a small circle.
+        </p>
+        <p>
+          <code class="lang-typescript">SplatParticle</code> sends our particles flying in evenly-distributed directions from the origin point by dividing 2π radians by the number of particles, rotating by this amount, generating a unit vector from this angle, then scaling it to our chosen <code class="lang-typescript">particleSpeed</code>, in a loop. We manage the <code class="lang-typescript">lifespan</code> from this class rather than the individual particles since we're not continuously generating new particles and they all expire at the same time.
+        </p>
+        <p>
+          Let's put our new <code class="lang-typescript">Splat</code> to use.
+        </p>
+        <pre>
+          <code class="lang-typescript">
+            // Game.ts
+            // setup
+            // ...
+            splats: Splat[] = [];
+            // ...
+
+            private loop = (ms: number): void => {
+              // ...
+              this.projectiles = this.projectiles.filter(
+                (projectile) => projectile.isActive
+              );
+              this.enemies = this.enemies.filter((enemy) => enemy.isActive);
+              this.splats = this.splats.filter((splat) => splat.isActive);
+              // ...
+            }
+
+            private update(dts: number): void {
+              // ...
+              for (let splat of this.splats) {
+                splat.update(dts);
+              }
+            }
+
+            private draw(): void {
+              // ...
+              for (let enemy of this.enemies) {
+                enemy.draw();
+              }
+              for (let projectile of this.projectiles) {
+                projectile.draw();
+              }
+              for (let splat of this.splats) {
+                splat.draw(this.ctx);
+              }
+              // ...
+            }
+
+            private detectCollisions(): void {
+              for (let projectile of this.projectiles) {
+                for (let enemy of this.enemies) {
+                  if (circleCircleCollisionDetected(projectile, enemy)) {
+                    // ...
+                    if (enemy.requiredHits === 0) {
+                      enemy.isActive = false;
+                      if (enemy.stage &lt; 3) {
+                        // ...
+                      } else {
+                        this.splats.push(
+                          new Splat(
+                            enemy.pos.copy(),
+                            enemy.colors.fill[0],
+                            enemy.colors.stroke[0]
+                          )
+                        );
+                      }
+                    }
+                  }
+                }
+              }
+          
+              // ...
+
+              if (collisionDetected) {
+                this.gameOver = true;
+                this.splats.push(new Splat(this.player.pos.copy(), "crimson", "darkred"));
+              }
+            }
+          </code>
+        </pre>
+        <p>
+          We update, draw, and filter our splats along with the player and enemies. When we destroy an enemy, we create a splat where the enemy had been, and the same for when we destroy the player.
+        </p>
+        <video muted controls>
+          <source src="vid/15-sparkles-and-splats/splat.mp4" type="video/mp4" />
+          Your browser does not support the video tag.
+        </video>
+        <p>
+          That's a lot better than the enemies and player just disappearing. Now we can work on our rainbow propulsion sparkles. 
+        </p>
+        <p>
+          This is essentially a part of the player, (activated and deactivated by the player, moves in relation to the player), we're going to give control of this particle system to the <code class="lang-typescript">Player</code> class instead of the <code class="lang-typescript">Game</code> class.
+        </p>
+        <pre>
+          <code class="lang-typescript">
+            // Player.ts
+            // setup
+            sparkles: Sparkles;
+
+            constructor(ctx. CanvasRenderingContext2D, game: Game) {
+              // ...
+              this.sparkles = new Sparkles();
+              // ...
+            }
+
+            update(dts: number): void {
+              // ...
+              if (this.keys.up) {
+                this.applyPropulsionForce();
+                this.sparkles.isActive = true;
+              } else {
+                this.sparkles.isActive = false;
+              }
+
+              const buttPos = Vec2.fromAngle(this.rotation, -this.width / 2).add(
+                this.pos
+              );
+              this.sparkles.update(dts, buttPos, this.rotation);
+
+              // ...
+            }
+
+            draw(): void {
+              this.sparkles.draw(this.ctx);
+              // ...
+            }
+          </code>
+        </pre>
+        <p>
+          We're just taking care of the very basics here. If the player is hitting one of the up keys, we're going to activate the sparkles. Otherwise, we're going to deactivate the sparkles. (This will determine whether we spawn new particles.) We're going to update the sparkles system when we update the player and draw the sparkles system when we draw the player. To know where to create new sparkles and which direction to send them, (this particle system will be directional, since we want it to look like a propulsion effect), we'll need to supply the sparkles with the current position of the player's butt and the current angle of rotation. Hopefully, we've done enough work with vectors by now that our method of calculating the player's butt position is intuitive. 
+        </p>
+        <p>
+          This is all we need on the player's side of things. We'll create a file <code class="lang-markdown">Sparkles.ts</code> to hold <code class="lang-typescript">Sparkles</code>, (particle system), and <code class="lang-typescript">SparkleParticle</code>, (particle), classes. Let's start off with the particle.
+        </p>
+        <pre>
+          <code class="lang-typescript">
+            class SparkleParticle {
+              static readonly size: number = 5;
+              static readonly colors: string[] = [
+                "cyan",
+                "magenta",
+                "yellow",
+                "lime",
+                "red",
+                "orange",
+              ];
+
+              pos: Vec2;
+              vel: Vec2;
+              lifespan: number; // seconds
+              isActive: boolean = true;
+              elapsed: number = 0;
+              color: string;
+            }
+          </code>
+        </pre>
+        <p>
+          The size and selection of colors are shared constants between all sparkle particles. We have the usual suspects here, position, velocity, lifespan, active/inactive state, and a way of keeping track of the amount of time that has passed since the particle was created.
+        </p>
+        <pre>
+          <code class="lang-typescript">
+            constructor(pos: Vec2, vel: Vec2) {
+              this.pos = pos;
+              this.vel = vel;
+              this.lifespan = randRange(0.3, 0.5);
+              const randIdx = Math.floor(Math.random() * SparkleParticle.colors.length);
+              this.color = SparkleParticle.colors[randIdx];
+            }
+          </code>
+        </pre>
+        <p>
+          We'll randomly assign a lifespan and color for the particle. The reason we're creating a randomized lifespan instead of a fixed one is so the particles at the end of our particle trail don't all expire at the same time. If we don't do this, we end up with an unpleasant squared-off effect.
+        </p>
+        <pre>
+          <code class="lang-typescript">
+            update(dts: number): void {
+              this.pos.add(Vec2.scale(this.vel, dts));
+              
+              this.elapsed += dts;
+              if (this.elapsed > this.lifespan) {
+                this.isActive = false;
+              }
+            }
+          
+            draw(ctx: CanvasRenderingContext2D): void {
+              ctx.fillStyle = this.color;
+              ctx.fillRect(
+                this.pos.x - SparkleParticle.size / 2,
+                this.pos.y - SparkleParticle.size / 2,
+                SparkleParticle.size,
+                SparkleParticle.size
+              );
+            }
+          </code>
+        </pre>
+        <p>
+          This is more-or-less identical to our proof of concept. We <code class="lang-typescript">update</code> as we do all with all our game objects, by adding position to velocity, (no external forces at work here), and then we check to see if we have reached our lifespan yet. The <code class="lang-typescript">draw</code> method is as simple as it gets, drawing a square at the current position.
+        </p>
+        <p>
+          That's all there is to the <code class="lang-typescript">SparkleParticle</code>. Let's set up the particle system with the <code class="lang-typescript">Sparkles</code> class.
+        </p>
+        <pre>
+          <code class="lang-typescript">
+            export class Sparkles {
+              static angleVariance: number = Math.PI / 6;
+              static particleSpeed: number = 200;
+
+              particles: SparkleParticle[] = [];
+              spawnRate: number = 5 / 1000; // 5 ms
+              lastSpawnTime: number = 0;
+              elapsed: number = 0;
+              isActive: boolean = false;
+            }
+          </code>
+        </pre>
+        <p>
+          This <code class="lang-typescript">angleVariance</code> will be the range of angles we can set for our particle velocity when spawning new particles. We don't want them all being sent out in a straight line, so we'll randomize the angle within a certain range. Everything else here is mostly from the proof of concept, only instead of working with the <code class="lang-typescript">ms</code> timestamp from <code class="lang-typescript">requestAnimationFrame</code> directly, we're going to calculate elapsed time based on <code class="lang-typescript">dts</code>. The player already has access to this variable, but doesn't currently use <code class="lang-typescript">ms</code>. We've set up a pretty uniform method of updating and drawing all our game objects, and I'd like to keep that intact in case we want to perform some refactoring later. The constructor is blank.
+        </p>
+        <pre>
+          <code class="lang-typescript">
+            update(dts: number, pos: Vec2, playerAngle: number): void {
+              this.elapsed += dts;
+
+              const delta = this.elapsed - this.lastSpawnTime;
+              if (delta > this.spawnRate && this.isActive) {
+                this.spawnParticle(pos, playerAngle);
+                this.lastSpawnTime = this.elapsed - (this.elapsed % this.spawnRate);
+              }
+          
+              this.particles = this.particles.filter(particle => particle.isActive);
+              for (let particle of this.particles) {
+                particle.update(dts);
+              }
+            }
+          
+            draw(ctx: CanvasRenderingContext2D): void {
+              for (let particle of this.particles) {
+                particle.draw(ctx);
+              }
+            }
+          </code>
+        </pre>
+        <p>
+          This is all pretty much exactly how the proof of concept worked. You can now see how we use the <code class="lang-typescript">isActive</code> flag set by the player to turn particle spawning on and off.
+        </p>
+        <pre>
+          <code class="lang-typescript">
+            private spawnParticle(pos: Vec2, playerAngle: number): void {
+              const minAngle = playerAngle - Sparkles.angleVariance;
+              const maxAngle = playerAngle + Sparkles.angleVariance;
+              const angle = randRange(minAngle, maxAngle);
+              this.particles.push(
+                new SparkleParticle(
+                  pos.copy(),
+                  Vec2.fromAngle(angle, -Sparkles.particleSpeed)
+                )
+              );
+            }
+          </code>
+        </pre>
+        <p>
+          Here's where that angle variance comes in. We find a min and max angle based on the player's current angle, then randomly select an angle in that range to send out our new particle. Our <code class="lang-typescript">Vec2.fromAngle</code> function is really coming in handy today.
+        </p>
+        <p>
+          And this is all we need to do to create the rainbow butt sparkles that, as everyone knows, are the primary propulsion mechanism of all magical reindeer. Let's see how this looks.
+        </p>
+        <video muted controls>
+          <source src="vid/15-sparkles-and-splats/sparkles.mp4" type="video/mp4" />
+          Your browser does not support the video tag.
+        </video>
+        <p>
+          Honestly, this is my favorite part of the game so far. I just find it really satisfying. The game plays smoothly and is looks pretty nice, but it's totally silent. In the next section, we'll work on adding some music and sound effects.
+        </p>
         <a href="14-particle-systems.html">Previous</a>
-        <!-- <a href="">Next</a> -->
+        <a href="15-sound.html">Next</a>
       </section>
     </article>
     <script src="libs/prism.js"></script>
