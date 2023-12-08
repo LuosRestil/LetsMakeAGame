@@ -15,7 +15,374 @@
     <article>
       <h1>Sound</h1>
       <section>
-        
+        <p>
+          The most difficult part of adding sound to our game is sourcing
+          assets. There are lots of different actions and events in our game
+          that should have a sound, and we have to either find or create a sound
+          for all of these. Here's
+          <a
+            href="https://github.com/kobitoko/Game-Jam-Tools-Resources#sound-resources"
+            >a very helpful GitHub repo</a
+          >
+          for finding or creating game assets, including sounds and music. I've
+          chosen to source mostly from
+          <a href="freesound.org">freesound.org</a>. Thinking through our game,
+          we'll need sounds for:
+        </p>
+        <ul>
+          <li>firing cookies</li>
+          <li>damaging a tough enemy</li>
+          <li>splitting an enemy</li>
+          <li>splatting an enemy</li>
+          <li>splatting the player</li>
+          <li>reaching a new level</li>
+          <li>sparkles</li>
+        </ul>
+        <p>And we'll need music for:</p>
+        <ul>
+          <li>loading screen</li>
+          <li>gameplay</li>
+          <li>game over screen</li>
+        </ul>
+        <p>
+          Some of the sounds I found required editing, either to create a smooth
+          loop (for music) or to trim leading/trailing silences. If you have no
+          experience with audio editing,
+          <a href="https://www.audacityteam.org/">Audacity</a> is a reasonably
+          user-friendly, cross-platform tool you can use to perform simple tasks
+          like these.
+        </p>
+        <p>
+          We'll be storing our sound files in a folder named
+          <code class="lang-typescript">public</code>. If we don't do this,
+          we'll have to import them as modules to be processed and imported by
+          our build tool. Using the public folder just simplifies serving and
+          referencing these files.
+        </p>
+        <p>
+          Once we have our sounds, adding them into the game and using them
+          isn't such a big deal. We have a couple of options available to us. We
+          can use the
+          <a
+            href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API"
+            >Web Audio API</a
+          >, (kind of complicated), or HTML Audio elements, (very simple). For
+          really high performance and customization, the Web Audio API is
+          probably the way to go, but the easier option suits our needs just
+          fine.
+        </p>
+        <p>Let's start with our main game music.</p>
+        <pre>
+          <code class="lang-typescript">
+            // Game.ts
+            // setup
+            mainSong: HTMLAudioElement = new Audio("main-song.ogg");
+
+            // constructor
+            // ...
+            this.mainSong.loop = true;
+            this.mainSong.volume = 0.4;
+            this.mainSong.play();
+            // ...
+          </code>
+        </pre>
+        <p>
+          I'm sure you can guess what each part of this does. We're creating an
+          HTML Audio element, with our sound file as the source. The
+          <code class="lang-typescript">loop</code> property will cause the song
+          to start playing again from the beginning once the end of the file is
+          reached. The volume property... sets the volume. My file was quite
+          loud, so I've lowered the volume so it's not so overwhelming. Last,
+          the <code class="lang-typescript">play</code> method does what it says
+          on the box, plays our song.
+        </p>
+        <p>
+          When the player is wiped out, we'll want to stop the song. And we'll
+          want to start it up again if the player restarts.
+        </p>
+        <pre>
+          <code class="lang-typescript">
+            // Game.ts
+            private detectCollisions(): void {
+              // ...
+              if (collisionDetected) {
+                this.splats.push(new Splat(this.player.pos.copy(), "crimson", "darkred"));
+                this.gameOver = true;
+                this.mainSong.pause();
+                this.mainSong.currentTime = 0;
+              }
+            }
+          </code>
+        </pre>
+        <p>
+          <code class="lang-typescript">pause</code> is as self-explanatory as
+          <code class="lang-typescript">play</code>. The
+          <code class="lang-typescript">currentTime</code> property sets the
+          playback position of the audio, (in seconds). We're setting this to
+          zero so that the next time we call
+          <code class="lang-typescript">play</code>, (when the player restarts),
+          we'll be at the start of the song instead of whatever part of the song
+          we happened to be at when the player died. Speaking of which:
+        </p>
+        <pre>
+          <code class="lang-typescript">
+            // Game.ts
+            private refresh(): void {
+              // ...
+              this.mainSong.play();
+            }
+          </code>
+        </pre>
+        <p>
+          Now we're playing the main song at the start of the game, stopping it
+          when the player dies, and starting it again from the beginning when
+          the player restarts. Let's start adding some sound effects, starting
+          with firing cookies.
+        </p>
+        <pre>
+          <code class="lang-typescript">
+            // Player.ts
+            // setup
+            fireSound: HTMLAudioElement = new Audio("laser.wav");
+
+            // constructor
+            this.fireSound.preload = "auto";
+
+            private fire(): void {
+              if (!this.fireSound.paused) {
+                this.fireSound.currentTime = 0; // Restart the sound if it is playing
+              }
+              this.fireSound.play();
+            }
+          </code>
+        </pre>
+        <p>
+          The <code class="lang-typescript">preload</code> attribute lets us
+          make a suggestion to the browser, which it may or may not choose to
+          follow, to load the audio file as soon as the page loads. This
+          increases the chances that we won't have any delay the first time the
+          user fires a cookie and plays the sound. Playing the sound is not
+          quite as straightforward here as it was with the main song. If we were
+          to only call
+          <code class="lang-typescript">this.fireSound.play()</code>, we would
+          find that if we fired multiple cookies in quick succession, we
+          wouldn't hear the sound played for every cookie. If we call
+          <code class="lang-typescript">play</code> on an audio element that is
+          already playing, nothing happens. Since we want to hear the sound for
+          every fired cookie, we have to first check to see if the sound is
+          currently being played, (the
+          <code class="lang-typescript">paused</code> attribute will be set to
+          <code class="lang-typescript">true</code> when the file is finished
+          playing), and if it is, we'll just tell it to start over at the
+          beginning by setting the
+          <code class="lang-typescript">currentTime</code> to zero. If it's not
+          already playing, we can just call
+          <code class="lang-typescript">play</code> like normal.
+        </p>
+        <p>Now we can work on the impact sounds for our enemies.</p>
+        <pre>
+          <code class="lang-typescript">
+            // Enemy.ts
+            // setup
+            dingSound: HTMLAudioElement = new Audio("ding.ogg");
+            popSound: HTMLAudioElement = new Audio("pop.mp3");
+            splatSound: HTMLAudioElement = new Audio("splat.wav");
+
+            // constructor
+            this.dingSound.preload = "auto";
+            this.popSound.preload = "auto";
+            this.splatSound.preload = "auto";
+
+            ding(): void {
+              if (!this.dingSound.paused) {
+                this.dingSound.currentTime = 0; // Restart the sound if it is playing
+              }
+              this.dingSound.play();
+            }
+          
+            pop(): void {
+              this.popSound.play();
+            }
+          
+            splat(): void {
+              this.splatSound.play();
+            }
+          </code>
+        </pre>
+        <p>
+          Enemy damage and destruction is handled by the
+          <code class="lang-typescript">Game</code> class, so we have to expose
+          some methods here for us to play the enemy's sounds externally. If we
+          try to put the audio elements on the
+          <code class="lang-typescript">Game</code> class instead, we'll find
+          that this will prevent us from playing overlapping sounds for multiple
+          enemy impacts. Note that we only have to check the ding sound to see
+          if it's already playing. This is going to be the sound for an enemy
+          that takes multiple hits to destroy, so it's the only one that can be
+          played repeatedly. All the others are one and done, because the enemy
+          will be destroyed when they are played. Now let's play these effects
+          when our enemies are hit.
+        </p>
+        <pre>
+          <code class="lang-typescript">
+            private detectCollisions(): void {
+              for (let projectile of this.projectiles) {
+                for (let enemy of this.enemies) {
+                  if (circleCircleCollisionDetected(projectile, enemy)) {
+                    // ...
+                    if (enemy.requiredHits === 0) {
+                      enemy.isActive = false;
+                      if (enemy.stage &lt; 3) {
+                        enemy.pop();
+                        // ...
+                      } else {
+                        enemy.splat();
+                        // ...
+                      }
+                    } else {
+                      enemy.ding();
+                    }
+                  }
+                }
+              }
+          </code>
+        </pre>
+        <p>
+          And we're done. Enemies now ding, pop, and splat when they are
+          damaged/destroyed. Next on our list: splatting the player. I'm sure
+          you know exactly how this is going to work by now.
+        </p>
+        <pre>
+          <code class="lang-typescript">
+            // Game.ts
+            // setup
+            playerDeathSound: HTMLAudioElement = new Audio("player-death.wav");
+
+            // constructor
+            this.playerDeathSound.preload = "auto";
+
+            private detectCollisions(): void {
+              // ...
+              if (collisionDetected) {
+                // ...
+                this.playerDeathSound.play();
+              }
+            }
+          </code>
+        </pre>
+        <p>
+          Since there's only one player, we don't have to handle overlapping
+          sounds, and can go ahead and keep this sound in the
+          <code class="lang-typescript">Game</code> class. Next, reaching a new
+          level.
+        </p>
+        <pre>
+          <code class="lang-typescript">
+            // Game.ts
+            // setup
+            levelUpSound: HTMLAudioElement = new Audio("level-up.mp3");
+
+            // constructor
+            this.levelUpSound.preload = "auto";
+
+            private loop(ms: number): void {
+              // ...
+              if (!this.enemies.length) {
+                // ...
+                this.levelUpSound.play();
+              }
+            }
+          </code>
+        </pre>
+        <p>And finally our sparkles.</p>
+        <pre>
+          <code class="lang-typescript">
+            // Player.ts
+            // setup
+            sparkleSound: HTMLAudioElement = new Audio("sparkle2.wav");
+
+            // constructor
+            this.sparkleSound.preload = "auto";
+            this.sparkleSound.loop = true;
+
+            update(dts: number): void {
+              // ...
+              if (this.keys.up) {
+                this.applyPropulsionForce();
+                this.sparkles.isActive = true;
+                if (this.sparkleSound.paused) {
+                  this.sparkleSound.play();
+                }
+              } else {
+                this.sparkles.isActive = false;
+                this.sparkleSound.pause();
+                this.sparkleSound.currentTime = 0;
+              }
+              // ...
+            }
+          </code>
+        </pre>
+        <p>
+          We'll loop this sound, since the player can propel for as long as they
+          want.
+        </p>
+        <p>
+          That does it for sound effects! Let's add the last two bits of music,
+          starting with the title screen.
+        </p>
+        <pre>
+          <code class="lang-typescript">
+            // main.ts
+            // ...
+            const titleScreen = document.getElementById("title-screen") as HTMLDivElement;
+
+            const introSong: HTMLAudioElement = new Audio("intro-song.mp3");
+            introSong.loop = true;
+            introSong.volume = 0.5;
+            introSong.play();
+
+            function startGame(evt: KeyboardEvent): void {
+              if (evt.key === "r") {
+                // ...
+                introSong.pause();
+              }
+            }
+          </code>
+        </pre>
+        <p>And the game over screen.</p>
+        <pre>
+          <code class="lang-typescript">
+            // Game.ts
+            // setup
+            gameOverSong: HTMLAudioElement = new Audio("game-over.wav");
+
+            // constructor
+            this.gameOverSong.preload = "auto";
+            this.gameOverSong.volume = 0.5;
+
+            private detectCollisions(): void {
+              // ...
+              if (collisionDetected) {
+                this.splats.push(new Splat(this.player.pos.copy(), "crimson", "darkred"));
+                this.gameOver = true;
+                this.mainSong.pause();
+                this.mainSong.currentTime = 0;
+                this.playerDeathSound.play();
+                this.gameOverSong.play();
+              }
+            }
+
+            private refresh(): void {
+              // ...
+              this.gameOverSong.pause();
+              this.gameOverSong.currentTime = 0;
+              this.mainSong.play();
+            }
+          </code>
+        </pre>
+        <p>
+          And we're done! We have music and sounds for our game. This really goes a long way toward making this feel polished.
+        </p>
         <a href="15-sparkles-and-splats.html">Previous</a>
         <!-- <a href="">Next</a> -->
       </section>
