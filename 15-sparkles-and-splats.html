@@ -10,7 +10,34 @@
   <body>
     <header>
       <div id="title">Let's Make A Game</div>
-      <nav id="nav"></nav>
+      <nav id="nav">
+        <div class="dropdown nav-item">
+          <span>Lessons</span>
+          <div class="dropdown-content">
+            <a href="index.html">Welcome</a>
+            <a href="00-setup.html">00 - Setup</a>
+            <a href="01-drawing.html">01 - Drawing</a>
+            <a href="02-movement.html">02 - Movement</a>
+            <a href="03-vectors.html">03 - Vectors</a>
+            <a href="04-player-control.html">04 - Player Control</a>
+            <a href="05-enemies.html">05 - Enemies</a>
+            <a href="06-projectiles.html">06 - Projectiles</a>
+            <a href="07-collision-detection-1.html">07 - Collisions Pt. 1</a>
+            <a href="08-collision-detection-2.html">08 - Collisions Pt. 2</a>
+            <a href="09-game-over.html">09 - Game Over</a>
+            <a href="10-enemy-enhancement.html">10 - Enemy Enhancements</a>
+            <a href="11-levels-and-scoring.html">11 - Levels and Scoring</a>
+            <a href="12-title-screen.html">12 - Title Screen</a>
+            <a href="13-stars.html">13 - Stars</a>
+            <a href="14-particle-systems.html">14 - Particle Systems</a>
+            <a href="15-sparkles-and-splats.html">15 - Sparkles and Splats</a>
+            <a href="16-sound.html">16 - Sound</a>
+          </div>
+        </div>
+        <a class="nav-item" href="https://github.com/LuosRestil/LMAGSource"
+          >Github</a
+        >
+      </nav>
     </header>
     <article>
       <h1>Sparkles and Splats</h1>
@@ -102,16 +129,26 @@
           </code>
         </pre>
         <p>
-          <code class="lang-typescript">SplatParticle</code> has what we've come to expect from our game objects, a
-          position, a velocity, an
+          <code class="lang-typescript">SplatParticle</code> has what we've come
+          to expect from our game objects, a position, a velocity, an
           <code class="lang-typescript">update</code> method and a
-          <code class="lang-typescript">draw</code> method. We're passing a fill and stroke color in the constructor, (passed down from the
+          <code class="lang-typescript">draw</code> method. We're passing a fill
+          and stroke color in the constructor, (passed down from the
           <code class="lang-typescript">Splat</code>, which also takes these
           colors in the constructor), so we can create splats of different
-          colors. The <code class="lang-typescript">draw</code> method just renders a small circle.
+          colors. The <code class="lang-typescript">draw</code> method just
+          renders a small circle.
         </p>
         <p>
-          <code class="lang-typescript">Splat</code> sends our particles flying in evenly-distributed directions from the origin point by dividing 2π radians by the number of particles, rotating by this amount, generating a unit vector from this angle, then scaling it to our chosen <code class="lang-typescript">particleSpeed</code>, in a loop. We manage the <code class="lang-typescript">lifespan</code> from this class rather than the individual particles since we're not continuously generating new particles and they all expire at the same time.
+          <code class="lang-typescript">Splat</code> sends our particles flying
+          in evenly-distributed directions from the origin point by dividing 2π
+          radians by the number of particles, rotating by this amount,
+          generating a unit vector from this angle, then scaling it to our
+          chosen <code class="lang-typescript">particleSpeed</code>, in a loop.
+          We manage the <code class="lang-typescript">lifespan</code> from this
+          class rather than the individual particles since we're not
+          continuously generating new particles and they all expire at the same
+          time.
         </p>
         <p>
           Let's put our new <code class="lang-typescript">Splat</code> to use.
@@ -188,17 +225,24 @@
           </code>
         </pre>
         <p>
-          We update, draw, and filter our splats along with the player and enemies. When we destroy an enemy, we create a splat where the enemy had been, and the same for when we destroy the player.
+          We update, draw, and filter our splats along with the player and
+          enemies. When we destroy an enemy, we create a splat where the enemy
+          had been, and the same for when we destroy the player.
         </p>
         <video muted controls>
           <source src="vid/15-sparkles-and-splats/splat.mp4" type="video/mp4" />
           Your browser does not support the video tag.
         </video>
         <p>
-          That's a lot better than the enemies and player just disappearing. Now we can work on our rainbow propulsion sparkles. 
+          That's a lot better than the enemies and player just disappearing. Now
+          we can work on our rainbow propulsion sparkles.
         </p>
         <p>
-          This is essentially a part of the player, (activated and deactivated by the player, moves in relation to the player), we're going to give control of this particle system to the <code class="lang-typescript">Player</code> class instead of the <code class="lang-typescript">Game</code> class.
+          This is essentially a part of the player, (activated and deactivated
+          by the player, moves in relation to the player), we're going to give
+          control of this particle system to the
+          <code class="lang-typescript">Player</code> class instead of the
+          <code class="lang-typescript">Game</code> class.
         </p>
         <pre>
           <code class="lang-typescript">
@@ -236,10 +280,25 @@
           </code>
         </pre>
         <p>
-          We're just taking care of the very basics here. If the player is hitting one of the up keys, we're going to activate the sparkles. Otherwise, we're going to deactivate the sparkles. (This will determine whether we spawn new particles.) We're going to update the sparkles system when we update the player and draw the sparkles system when we draw the player. To know where to create new sparkles and which direction to send them, (this particle system will be directional, since we want it to look like a propulsion effect), we'll need to supply the sparkles with the current position of the player's butt and the current angle of rotation. Hopefully, we've done enough work with vectors by now that our method of calculating the player's butt position is intuitive. 
+          We're just taking care of the very basics here. If the player is
+          hitting one of the up keys, we're going to activate the sparkles.
+          Otherwise, we're going to deactivate the sparkles. (This will
+          determine whether we spawn new particles.) We're going to update the
+          sparkles system when we update the player and draw the sparkles system
+          when we draw the player. To know where to create new sparkles and
+          which direction to send them, (this particle system will be
+          directional, since we want it to look like a propulsion effect), we'll
+          need to supply the sparkles with the current position of the player's
+          butt and the current angle of rotation. Hopefully, we've done enough
+          work with vectors by now that our method of calculating the player's
+          butt position is intuitive.
         </p>
         <p>
-          This is all we need on the player's side of things. We'll create a file <code class="lang-markdown">Sparkles.ts</code> to hold <code class="lang-typescript">Sparkles</code>, (particle system), and <code class="lang-typescript">SparkleParticle</code>, (particle), classes. Let's start off with the particle.
+          This is all we need on the player's side of things. We'll create a
+          file <code class="lang-markdown">Sparkles.ts</code> to hold
+          <code class="lang-typescript">Sparkles</code>, (particle system), and
+          <code class="lang-typescript">SparkleParticle</code>, (particle),
+          classes. Let's start off with the particle.
         </p>
         <pre>
           <code class="lang-typescript">
@@ -264,7 +323,10 @@
           </code>
         </pre>
         <p>
-          The size and selection of colors are shared constants between all sparkle particles. We have the usual suspects here, position, velocity, lifespan, active/inactive state, and a way of keeping track of the amount of time that has passed since the particle was created.
+          The size and selection of colors are shared constants between all
+          sparkle particles. We have the usual suspects here, position,
+          velocity, lifespan, active/inactive state, and a way of keeping track
+          of the amount of time that has passed since the particle was created.
         </p>
         <pre>
           <code class="lang-typescript">
@@ -278,7 +340,11 @@
           </code>
         </pre>
         <p>
-          We'll randomly assign a lifespan and color for the particle. The reason we're creating a randomized lifespan instead of a fixed one is so the particles at the end of our particle trail don't all expire at the same time. If we don't do this, we end up with an unpleasant squared-off effect.
+          We'll randomly assign a lifespan and color for the particle. The
+          reason we're creating a randomized lifespan instead of a fixed one is
+          so the particles at the end of our particle trail don't all expire at
+          the same time. If we don't do this, we end up with an unpleasant
+          squared-off effect.
         </p>
         <pre>
           <code class="lang-typescript">
@@ -303,10 +369,18 @@
           </code>
         </pre>
         <p>
-          This is more-or-less identical to our proof of concept. We <code class="lang-typescript">update</code> as we do all with all our game objects, by adding position to velocity, (no external forces at work here), and then we check to see if we have reached our lifespan yet. The <code class="lang-typescript">draw</code> method is as simple as it gets, drawing a square at the current position.
+          This is more-or-less identical to our proof of concept. We
+          <code class="lang-typescript">update</code> as we do all with all our
+          game objects, by adding position to velocity, (no external forces at
+          work here), and then we check to see if we have reached our lifespan
+          yet. The <code class="lang-typescript">draw</code> method is as simple
+          as it gets, drawing a square at the current position.
         </p>
         <p>
-          That's all there is to the <code class="lang-typescript">SparkleParticle</code>. Let's set up the particle system with the <code class="lang-typescript">Sparkles</code> class.
+          That's all there is to the
+          <code class="lang-typescript">SparkleParticle</code>. Let's set up the
+          particle system with the
+          <code class="lang-typescript">Sparkles</code> class.
         </p>
         <pre>
           <code class="lang-typescript">
@@ -323,7 +397,20 @@
           </code>
         </pre>
         <p>
-          This <code class="lang-typescript">angleVariance</code> will be the range of angles we can set for our particle velocity when spawning new particles. We don't want them all being sent out in a straight line, so we'll randomize the angle within a certain range. Everything else here is mostly from the proof of concept, only instead of working with the <code class="lang-typescript">ms</code> timestamp from <code class="lang-typescript">requestAnimationFrame</code> directly, we're going to calculate elapsed time based on <code class="lang-typescript">dts</code>. The player already has access to this variable, but doesn't currently use <code class="lang-typescript">ms</code>. We've set up a pretty uniform method of updating and drawing all our game objects, and I'd like to keep that intact in case we want to perform some refactoring later. The constructor is blank.
+          This <code class="lang-typescript">angleVariance</code> will be the
+          range of angles we can set for our particle velocity when spawning new
+          particles. We don't want them all being sent out in a straight line,
+          so we'll randomize the angle within a certain range. Everything else
+          here is mostly from the proof of concept, only instead of working with
+          the <code class="lang-typescript">ms</code> timestamp from
+          <code class="lang-typescript">requestAnimationFrame</code> directly,
+          we're going to calculate elapsed time based on
+          <code class="lang-typescript">dts</code>. The player already has
+          access to this variable, but doesn't currently use
+          <code class="lang-typescript">ms</code>. We've set up a pretty uniform
+          method of updating and drawing all our game objects, and I'd like to
+          keep that intact in case we want to perform some refactoring later.
+          The constructor is blank.
         </p>
         <pre>
           <code class="lang-typescript">
@@ -350,7 +437,10 @@
           </code>
         </pre>
         <p>
-          This is all pretty much exactly how the proof of concept worked. You can now see how we use the <code class="lang-typescript">isActive</code> flag set by the player to turn particle spawning on and off.
+          This is all pretty much exactly how the proof of concept worked. You
+          can now see how we use the
+          <code class="lang-typescript">isActive</code> flag set by the player
+          to turn particle spawning on and off.
         </p>
         <pre>
           <code class="lang-typescript">
@@ -368,22 +458,36 @@
           </code>
         </pre>
         <p>
-          Here's where that angle variance comes in. We find a min and max angle based on the player's current angle, then randomly select an angle in that range to send out our new particle. Our <code class="lang-typescript">Vec2.fromAngle</code> function is really coming in handy today.
+          Here's where that angle variance comes in. We find a min and max angle
+          based on the player's current angle, then randomly select an angle in
+          that range to send out our new particle. Our
+          <code class="lang-typescript">Vec2.fromAngle</code> function is really
+          coming in handy today.
         </p>
         <p>
-          And this is all we need to do to create the rainbow butt sparkles that, as everyone knows, are the primary propulsion mechanism of all magical reindeer. Let's see how this looks.
+          And this is all we need to do to create the rainbow butt sparkles
+          that, as everyone knows, are the primary propulsion mechanism of all
+          magical reindeer. Let's see how this looks.
         </p>
         <video muted controls>
-          <source src="vid/15-sparkles-and-splats/sparkles.mp4" type="video/mp4" />
+          <source
+            src="vid/15-sparkles-and-splats/sparkles.mp4"
+            type="video/mp4"
+          />
           Your browser does not support the video tag.
         </video>
         <p>
-          Honestly, this is my favorite part of the game so far. I just find it really satisfying. The game plays smoothly and it looks pretty nice, but it's totally silent. In the next section, we'll work on adding some music and sound effects.
+          Honestly, this is my favorite part of the game so far. I just find it
+          really satisfying. The game plays smoothly and it looks pretty nice,
+          but it's totally silent. In the next section, we'll work on adding
+          some music and sound effects.
         </p>
-        <a href="14-particle-systems.html">Previous</a>
-        <a href="15-sound.html">Next</a>
       </section>
     </article>
+    <footer>
+      <a class="prev-link" href="14-particle-systems.html">&lt; 14 - Particle Systems</a>
+      <a class="next-link" href="15-sound.html">15 - Sound &gt;</a>
+    </footer>
     <script src="libs/prism.js"></script>
   </body>
 </html>

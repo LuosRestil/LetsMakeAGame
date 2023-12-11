@@ -10,13 +10,48 @@
   <body>
     <header>
       <div id="title">Let's Make A Game</div>
-      <nav id="nav"></nav>
+      <nav id="nav">
+        <div class="dropdown nav-item">
+          <span>Lessons</span>
+          <div class="dropdown-content">
+            <a href="index.html">Welcome</a>
+            <a href="00-setup.html">00 - Setup</a>
+            <a href="01-drawing.html">01 - Drawing</a>
+            <a href="02-movement.html">02 - Movement</a>
+            <a href="03-vectors.html">03 - Vectors</a>
+            <a href="04-player-control.html">04 - Player Control</a>
+            <a href="05-enemies.html">05 - Enemies</a>
+            <a href="06-projectiles.html">06 - Projectiles</a>
+            <a href="07-collision-detection-1.html">07 - Collisions Pt. 1</a>
+            <a href="08-collision-detection-2.html">08 - Collisions Pt. 2</a>
+            <a href="09-game-over.html">09 - Game Over</a>
+            <a href="10-enemy-enhancement.html">10 - Enemy Enhancements</a>
+            <a href="11-levels-and-scoring.html">11 - Levels and Scoring</a>
+            <a href="12-title-screen.html">12 - Title Screen</a>
+            <a href="13-stars.html">13 - Stars</a>
+            <a href="14-particle-systems.html">14 - Particle Systems</a>
+            <a href="15-sparkles-and-splats.html">15 - Sparkles and Splats</a>
+            <a href="16-sound.html">16 - Sound</a>
+          </div>
+        </div>
+        <a class="nav-item" href="https://github.com/LuosRestil/LMAGSource"
+          >Github</a
+        >
+      </nav>
     </header>
     <article>
       <h1>Enemies</h1>
       <section>
         <p>
-          Time to make some enemies! But first, a little bit of housekeeping. Our game is about to get a lot more involved. Up to this point, we've only had the player to worry about, but now we're going to have enemies, and then projectiles and collisions... We need to get a little more organized in preparation for this. We'll create a Game class to house all the logic of our game instead of keeping it all in our <code class="lang-markup">main.ts</code> file. This will have the added benefit of allowing us to pass references to our game to any of our game objects that may need to update a piece of game state.
+          Time to make some enemies! But first, a little bit of housekeeping.
+          Our game is about to get a lot more involved. Up to this point, we've
+          only had the player to worry about, but now we're going to have
+          enemies, and then projectiles and collisions... We need to get a
+          little more organized in preparation for this. We'll create a Game
+          class to house all the logic of our game instead of keeping it all in
+          our <code class="lang-markup">main.ts</code> file. This will have the
+          added benefit of allowing us to pass references to our game to any of
+          our game objects that may need to update a piece of game state.
         </p>
         <pre>
           <code class="lang-typescript">
@@ -72,10 +107,19 @@
           </code>
         </pre>
         <p>
-          Notice that we're using an arrow function for the <code class="lang-typescript">loop</code> method. If we don't do this, <code class="lang-typescript">this</code> is going to be <code class="lang-typescript">undefined</code> inside the method because of the way <code class="lang-typescript">this</code> is scoped in callback functions in JavaScript. The arrow function ensures that <code class="lang-typescript">this</code> is bound to the class in which the function is defined.
+          Notice that we're using an arrow function for the
+          <code class="lang-typescript">loop</code> method. If we don't do this,
+          <code class="lang-typescript">this</code> is going to be
+          <code class="lang-typescript">undefined</code> inside the method
+          because of the way <code class="lang-typescript">this</code> is scoped
+          in callback functions in JavaScript. The arrow function ensures that
+          <code class="lang-typescript">this</code> is bound to the class in
+          which the function is defined.
         </p>
         <p>
-          This brings us back to where we started in terms of game functionality, but now we're in a better position to expand. Time to create our <code class="lang-typescript">Enemy</code> class.
+          This brings us back to where we started in terms of game
+          functionality, but now we're in a better position to expand. Time to
+          create our <code class="lang-typescript">Enemy</code> class.
         </p>
         <pre>
           <code class="lang-typescript">
@@ -112,13 +156,31 @@
           </code>
         </pre>
         <p>
-          This should look pretty familiar. We have position and velocity. We have an <code class="lang-typescript">update</code> method that adds our velocity, scaled by dts, to our position. (The enemies will have a constant, randomly selected velocity, so there's no need for acceleration here). We have a <code class="lang-typescript">draw</code> method to show our enemy on the canvas. (This drawing is very simple for the sake of brevity, I encourage you to make it your own. Or you can just copy the long version from GitHub).
+          This should look pretty familiar. We have position and velocity. We
+          have an <code class="lang-typescript">update</code> method that adds
+          our velocity, scaled by dts, to our position. (The enemies will have a
+          constant, randomly selected velocity, so there's no need for
+          acceleration here). We have a
+          <code class="lang-typescript">draw</code> method to show our enemy on
+          the canvas. (This drawing is very simple for the sake of brevity, I
+          encourage you to make it your own. Or you can just copy the long
+          version from GitHub).
         </p>
         <p>
-          Take a look at how we're constructing our starting position and velocity. Our position is going to be (0, 0), the top left corner of the canvas. To get our velocity, we're going to create a unit vector from a random angle, then scale that vector to a random magnitude (within a min-max range). Because we are screen-wrapping, this will give us the appearance of our enemy being spawned at one of the four corners of the screen. We don't want to just spawn in a random location, because we might squash the player right out of the gate.
+          Take a look at how we're constructing our starting position and
+          velocity. Our position is going to be (0, 0), the top left corner of
+          the canvas. To get our velocity, we're going to create a unit vector
+          from a random angle, then scale that vector to a random magnitude
+          (within a min-max range). Because we are screen-wrapping, this will
+          give us the appearance of our enemy being spawned at one of the four
+          corners of the screen. We don't want to just spawn in a random
+          location, because we might squash the player right out of the gate.
         </p>
         <p>
-          Since both the player and the enemies have identical screen wrapping needs, this function has been factored out into a <code class="lang-markup">utils.ts</code> file that can be shared by both classes. The Player class will be update accordingly.
+          Since both the player and the enemies have identical screen wrapping
+          needs, this function has been factored out into a
+          <code class="lang-markup">utils.ts</code> file that can be shared by
+          both classes. The Player class will be update accordingly.
         </p>
         <pre>
           <code class="lang-typescript">
@@ -143,10 +205,16 @@
           </code>
         </pre>
         <p>
-          This is more or less exactly what we had before, just passing in arguments for the game object (defined as anything with a <code class="lang-typescript">pos</code>property), and the canvas context (so we can get the canvas dimensions for comparison with the object's current position).
+          This is more or less exactly what we had before, just passing in
+          arguments for the game object (defined as anything with a
+          <code class="lang-typescript">pos</code>property), and the canvas
+          context (so we can get the canvas dimensions for comparison with the
+          object's current position).
         </p>
         <p>
-          Let's get some enemies on the screen! In our Game class, we'll add an array of Enemy as a property, then create and fill that array in the constructor.
+          Let's get some enemies on the screen! In our Game class, we'll add an
+          array of Enemy as a property, then create and fill that array in the
+          constructor.
         </p>
         <pre>
           <code class="lang-typescript">
@@ -174,9 +242,7 @@
             }
           </code>
         </pre>
-        <p>
-          Then we'll update and draw the enemies alongside the player.
-        </p>
+        <p>Then we'll update and draw the enemies alongside the player.</p>
         <pre>
           <code class="lang-typescript">
             private update(dts: number): void {
@@ -200,12 +266,16 @@
           Your browser does not support the video tag.
         </video>
         <p>
-          And that's it! We have enemies on screen. This was pretty easy for us to implement due to the groundwork that we laid with vectors. In the next section, we'll start firing projectiles.
+          And that's it! We have enemies on screen. This was pretty easy for us
+          to implement due to the groundwork that we laid with vectors. In the
+          next section, we'll start firing projectiles.
         </p>
-        <a href="04-player-control.html">Previous</a>
-        <a href="06-projectiles.html">Next</a>
       </section>
     </article>
+    <footer>
+      <a class="prev-link" href="04-player-control.html">&lt; 04 - Player Control</a>
+      <a class="next-link" href="06-projectiles.html">06 - Projectiles &gt;</a>
+    </footer>
     <script src="libs/prism.js"></script>
   </body>
 </html>

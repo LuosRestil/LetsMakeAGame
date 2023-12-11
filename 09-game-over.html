@@ -10,13 +10,47 @@
   <body>
     <header>
       <div id="title">Let's Make A Game</div>
-      <nav id="nav"></nav>
+      <nav id="nav">
+        <div class="dropdown nav-item">
+          <span>Lessons</span>
+          <div class="dropdown-content">
+            <a href="index.html">Welcome</a>
+            <a href="00-setup.html">00 - Setup</a>
+            <a href="01-drawing.html">01 - Drawing</a>
+            <a href="02-movement.html">02 - Movement</a>
+            <a href="03-vectors.html">03 - Vectors</a>
+            <a href="04-player-control.html">04 - Player Control</a>
+            <a href="05-enemies.html">05 - Enemies</a>
+            <a href="06-projectiles.html">06 - Projectiles</a>
+            <a href="07-collision-detection-1.html">07 - Collisions Pt. 1</a>
+            <a href="08-collision-detection-2.html">08 - Collisions Pt. 2</a>
+            <a href="09-game-over.html">09 - Game Over</a>
+            <a href="10-enemy-enhancement.html">10 - Enemy Enhancements</a>
+            <a href="11-levels-and-scoring.html">11 - Levels and Scoring</a>
+            <a href="12-title-screen.html">12 - Title Screen</a>
+            <a href="13-stars.html">13 - Stars</a>
+            <a href="14-particle-systems.html">14 - Particle Systems</a>
+            <a href="15-sparkles-and-splats.html">15 - Sparkles and Splats</a>
+            <a href="16-sound.html">16 - Sound</a>
+          </div>
+        </div>
+        <a class="nav-item" href="https://github.com/LuosRestil/LMAGSource"
+          >Github</a
+        >
+      </nav>
     </header>
     <article>
       <h1>Game Over</h1>
       <section>
         <p>
-          Whenever our player runs into an enemy, it will need to be destroyed, and we'll need to show a "Game Over" screen, with the option to play again. We'll handle all this with a simple <code class="lang-typescript">gameOver</code> flag added to our <code class="lang-typescript">Game</code> class. We'll use this as a switch to disable collision detection and the drawing of our player, as well as to enable the drawing of our Game Over screen and our restart functionality.  
+          Whenever our player runs into an enemy, it will need to be destroyed,
+          and we'll need to show a "Game Over" screen, with the option to play
+          again. We'll handle all this with a simple
+          <code class="lang-typescript">gameOver</code> flag added to our
+          <code class="lang-typescript">Game</code> class. We'll use this as a
+          switch to disable collision detection and the drawing of our player,
+          as well as to enable the drawing of our Game Over screen and our
+          restart functionality.
         </p>
         <pre>
           <code class="lang-typescript">
@@ -31,7 +65,12 @@
           </code>
         </pre>
         <p>
-          We've removed the placeholder background color change behavior that we were using to visualize collision detection, setting our new <code class="lang-typescript">gameOver</code> flag instead. Now we can use this to disable anything that we don't want to happen when the game is over and to show the game over screen. Let's start by hiding the player.
+          We've removed the placeholder background color change behavior that we
+          were using to visualize collision detection, setting our new
+          <code class="lang-typescript">gameOver</code> flag instead. Now we can
+          use this to disable anything that we don't want to happen when the
+          game is over and to show the game over screen. Let's start by hiding
+          the player.
         </p>
         <pre>
           <code class="lang-typescript">
@@ -43,9 +82,7 @@
             }
           </code>
         </pre>
-        <p>
-          That was easy! Let's see how it worked.
-        </p>
+        <p>That was easy! Let's see how it worked.</p>
         <video muted controls>
           <source
             src="vid/09-game-over/flawed-player-destroy.mp4"
@@ -54,7 +91,8 @@
           Your browser does not support the video tag.
         </video>
         <p>
-          Well, the player is hidden, but can still fire projectiles, and the enemies can still be destroyed. Let's disable those things as well.
+          Well, the player is hidden, but can still fire projectiles, and the
+          enemies can still be destroyed. Let's disable those things as well.
         </p>
         <pre>
           <code class="lang-typescript">
@@ -73,7 +111,9 @@
           </code>
         </pre>
         <p>
-          Much better. We now technically have game over functionality. It's not pretty, but it works. Let's make it better by adding a Game Over screen.
+          Much better. We now technically have game over functionality. It's not
+          pretty, but it works. Let's make it better by adding a Game Over
+          screen.
         </p>
         <pre>
           <code class="lang-typescript">
@@ -109,20 +149,24 @@
           </code>
         </pre>
         <video muted controls>
-          <source
-            src="vid/09-game-over/game-over.mp4"
-            type="video/mp4"
-          />
+          <source src="vid/09-game-over/game-over.mp4" type="video/mp4" />
           Your browser does not support the video tag.
         </video>
         <p>
-          There, a proper Game Over screen. We make a transparent overlay and print our game over text on it, leaving straggling projectiles and the victorious enemies floating around in the background for a little visual interest.
+          There, a proper Game Over screen. We make a transparent overlay and
+          print our game over text on it, leaving straggling projectiles and the
+          victorious enemies floating around in the background for a little
+          visual interest.
         </p>
         <p>
-          If we've done our job in making the game fun, our players aren't going to want to stop here. They'll want to play again. Right now, the only way to do that is to refresh the browser. Not a great user experience. Let's give the player an option to play again.
+          If we've done our job in making the game fun, our players aren't going
+          to want to stop here. They'll want to play again. Right now, the only
+          way to do that is to refresh the browser. Not a great user experience.
+          Let's give the player an option to play again.
         </p>
         <p>
-          First, we'll display some text to let them know they can do this, just underneath our game over text.
+          First, we'll display some text to let them know they can do this, just
+          underneath our game over text.
         </p>
         <pre>
           <code class="lang-typescript">
@@ -141,10 +185,8 @@
             );
           </code>
         </pre>
-        <img src="img/09-game-over/play-again.png" alt="play again text">
-        <p>
-          Now we have to actually handle the "R" keypress.
-        </p>
+        <img src="img/09-game-over/play-again.png" alt="play again text" />
+        <p>Now we have to actually handle the "R" keypress.</p>
         <pre>
           <code class="lang-typescript">
             // Game.ts
@@ -168,25 +210,46 @@
           </code>
         </pre>
         <p>
-          We've added a keydown listener in the constructor of our <code class="lang-typescript">Game</code> class to listen for an "r" keypress when the <code class="lang-typescript">gameOver</code> flag is set. (If we omit this <code class="lang-typescript">gameOver</code> check, we can restart the game at any time with the "r" key, and we don't want that.) This triggers our <code class="lang-typescript">refresh</code> process, clearing any remaining projectiles, spawning a fresh batch of enemies, resetting our player's position and velocity, (remember, we haven't actually destroyed our player, just hidden them), and un-setting our <code class="lang-typescript">gameOver</code> flag to reactivate all the game functionality we disabled. Let's give it a try.
+          We've added a keydown listener in the constructor of our
+          <code class="lang-typescript">Game</code> class to listen for an "r"
+          keypress when the <code class="lang-typescript">gameOver</code> flag
+          is set. (If we omit this
+          <code class="lang-typescript">gameOver</code> check, we can restart
+          the game at any time with the "r" key, and we don't want that.) This
+          triggers our <code class="lang-typescript">refresh</code> process,
+          clearing any remaining projectiles, spawning a fresh batch of enemies,
+          resetting our player's position and velocity, (remember, we haven't
+          actually destroyed our player, just hidden them), and un-setting our
+          <code class="lang-typescript">gameOver</code> flag to reactivate all
+          the game functionality we disabled. Let's give it a try.
         </p>
         <video muted controls>
-          <source
-            src="vid/09-game-over/restart.mp4"
-            type="video/mp4"
-          />
+          <source src="vid/09-game-over/restart.mp4" type="video/mp4" />
           Your browser does not support the video tag.
         </video>
         <p>
-          Perfect! I think we're good here. When our player is hit, we disable gameplay, show a reasonable game over screen, and let the player restart with the "r" button.
+          Perfect! I think we're good here. When our player is hit, we disable
+          gameplay, show a reasonable game over screen, and let the player
+          restart with the "r" button.
         </p>
         <p>
-          There is another "end" to the game we haven't considered just yet. If our player manages to destroy all the enemies, there's nothing more for them to do. The game doesn't end, but we also don't generate any more enemies. In the next section, we'll expand the game play by creating more enemies when the level is cleared. We'll also want to make each individual enemy more interesting by splitting into smaller enemies after being hit, until a certain size is reached, at which time they'll be destroyed. We'll also add durability to enemies, randomly making some enemies more difficult to defeat. See you in the next section!
+          There is another "end" to the game we haven't considered just yet. If
+          our player manages to destroy all the enemies, there's nothing more
+          for them to do. The game doesn't end, but we also don't generate any
+          more enemies. In the next section, we'll expand the game play by
+          creating more enemies when the level is cleared. We'll also want to
+          make each individual enemy more interesting by splitting into smaller
+          enemies after being hit, until a certain size is reached, at which
+          time they'll be destroyed. We'll also add durability to enemies,
+          randomly making some enemies more difficult to defeat. See you in the
+          next section!
         </p>
-        <a href="08-collision-detection-2.html">Previous</a>
-        <a href="10-enemy-enhancement.html">Next</a>
       </section>
     </article>
+    <footer>
+      <a class="prev-link" href="08-collision-detection-2.html">&lt; 08 - Collisions Pt. 2</a>
+      <a class="next-link" href="10-enemy-enhancement.html">10 - Enemy Enhancement &gt;</a>
+    </footer>
     <script src="libs/prism.js"></script>
   </body>
 </html>

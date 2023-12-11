@@ -4,20 +4,50 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Drawing - Let's Make A Game</title>
-    <link rel="stylesheet" href="libs/prism.css">
+    <link rel="stylesheet" href="libs/prism.css" />
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
     <header>
       <div id="title">Let's Make A Game</div>
-      <nav id="nav"></nav>
+      <nav id="nav">
+        <div class="dropdown nav-item">
+          <span>Lessons</span>
+          <div class="dropdown-content">
+            <a href="index.html">Welcome</a>
+            <a href="00-setup.html">00 - Setup</a>
+            <a href="01-drawing.html">01 - Drawing</a>
+            <a href="02-movement.html">02 - Movement</a>
+            <a href="03-vectors.html">03 - Vectors</a>
+            <a href="04-player-control.html">04 - Player Control</a>
+            <a href="05-enemies.html">05 - Enemies</a>
+            <a href="06-projectiles.html">06 - Projectiles</a>
+            <a href="07-collision-detection-1.html">07 - Collisions Pt. 1</a>
+            <a href="08-collision-detection-2.html">08 - Collisions Pt. 2</a>
+            <a href="09-game-over.html">09 - Game Over</a>
+            <a href="10-enemy-enhancement.html">10 - Enemy Enhancements</a>
+            <a href="11-levels-and-scoring.html">11 - Levels and Scoring</a>
+            <a href="12-title-screen.html">12 - Title Screen</a>
+            <a href="13-stars.html">13 - Stars</a>
+            <a href="14-particle-systems.html">14 - Particle Systems</a>
+            <a href="15-sparkles-and-splats.html">15 - Sparkles and Splats</a>
+            <a href="16-sound.html">16 - Sound</a>
+          </div>
+        </div>
+        <a class="nav-item" href="https://github.com/LuosRestil/LMAGSource"
+          >Github</a
+        >
+      </nav>
     </header>
     <article>
       <h1>Drawing with HTML Canvas</h1>
       <section>
         <p>
-          Let's start putting stuff on the screen with HTML Canvas! 
-          First order of business, we need to create a canvas to draw on. So let's do that. In our <code class="lang-markup">index.html</code> file, let's give ourselves a <code class="lang-markup">canvas</code> element inside a container div.
+          Let's start putting stuff on the screen with HTML Canvas! First order
+          of business, we need to create a canvas to draw on. So let's do that.
+          In our <code class="lang-markup">index.html</code> file, let's give
+          ourselves a <code class="lang-markup">canvas</code> element inside a
+          container div.
         </p>
         <pre>
           <code class="lang-html">
@@ -30,7 +60,10 @@
           </code>
         </pre>
         <p>
-          Let's go ahead and define our drawing surface a little bit better on the page. This is just a simple game, and I don't want to have to worry about monitor sizes and scaling and all that, so we're going to make our canvas a fixed size and place it in the middle of the window.
+          Let's go ahead and define our drawing surface a little bit better on
+          the page. This is just a simple game, and I don't want to have to
+          worry about monitor sizes and scaling and all that, so we're going to
+          make our canvas a fixed size and place it in the middle of the window.
         </p>
         <pre>
           <code class="lang-css">
@@ -59,12 +92,21 @@
             }
           </code>
         </pre>
-        <img src="img/01-drawing/blank-canvas.png" alt="blank canvas">
+        <img src="img/01-drawing/blank-canvas.png" alt="blank canvas" />
         <p>
-          Great, now our drawing surface is fully prepared. You'll notice we're not setting a width and height for our canvas in our CSS. Width and height will need to be set as properties of the element, not as CSS styles. If we try to do it in CSS, our canvas will render as a (small) default size, and then be stretched to our chose dimensions by CSS, distorting and resizing everything we've drawn, and we don't want that. From here on, we're (mostly) done with our HTML and CSS, and can spend the rest of our time building the game in TypeScript. Let's go ahead and do our first drawing!
+          Great, now our drawing surface is fully prepared. You'll notice we're
+          not setting a width and height for our canvas in our CSS. Width and
+          height will need to be set as properties of the element, not as CSS
+          styles. If we try to do it in CSS, our canvas will render as a (small)
+          default size, and then be stretched to our chose dimensions by CSS,
+          distorting and resizing everything we've drawn, and we don't want
+          that. From here on, we're (mostly) done with our HTML and CSS, and can
+          spend the rest of our time building the game in TypeScript. Let's go
+          ahead and do our first drawing!
         </p>
         <p>
-          Let's go into our <code class="lang-markup">main.ts</code> file. The first thing we have to do is get a reference to our game canvas.
+          Let's go into our <code class="lang-markup">main.ts</code> file. The
+          first thing we have to do is get a reference to our game canvas.
         </p>
         <pre>
           <code class="lang-typescript">
@@ -74,10 +116,26 @@
           </code>
         </pre>
         <p>
-          If we don't say <code class="lang-typescript">as HTMLCanvasElement</code>, our editor will tell us that our canvas may be undefined, and we'll have to check for this condition repeatedly down the road. We are positive this canvas is present, so we don't need to worry about this check, and we can confidently tell TS to chill out and trust us that it exists. You can see we're now setting the size of our canvas. We could also have done this on the canvas tag itself with the <code class="lang-markup">width</code> and <code class="lang-markup">height</code> attributes.
+          If we don't say
+          <code class="lang-typescript">as HTMLCanvasElement</code>, our editor
+          will tell us that our canvas may be undefined, and we'll have to check
+          for this condition repeatedly down the road. We are positive this
+          canvas is present, so we don't need to worry about this check, and we
+          can confidently tell TS to chill out and trust us that it exists. You
+          can see we're now setting the size of our canvas. We could also have
+          done this on the canvas tag itself with the
+          <code class="lang-markup">width</code> and
+          <code class="lang-markup">height</code> attributes.
         </p>
         <p>
-          The HTMLCanvasElement doesn't expose a way for us to draw on it. To do that, we have to get a reference to a "rendering context". There are several available to us, (see reference <a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/getContext">here</a>), but the best for our purposes is going to be a plain old 2d drawing surface.
+          The HTMLCanvasElement doesn't expose a way for us to draw on it. To do
+          that, we have to get a reference to a "rendering context". There are
+          several available to us, (see reference
+          <a
+            href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/getContext"
+            >here</a
+          >), but the best for our purposes is going to be a plain old 2d
+          drawing surface.
         </p>
         <pre>
           <code class="lang-typescript">
@@ -85,7 +143,10 @@
           </code>
         </pre>
         <p>
-          This rendering context offers us lots of ways to draw things. It has methods for outlining and filling rectangles, arcs, custom drawn paths, text, and probably some other stuff I haven't used. Let's start by drawing a rectangle on our canvas.
+          This rendering context offers us lots of ways to draw things. It has
+          methods for outlining and filling rectangles, arcs, custom drawn
+          paths, text, and probably some other stuff I haven't used. Let's start
+          by drawing a rectangle on our canvas.
         </p>
         <pre>
           <code class="lang-typescript">
@@ -96,9 +157,29 @@
             ctx.strokeRect(100, 100, 150, 200);
           </code>
         </pre>
-        <img src="img/01-drawing/red-rect.png" alt="rendered red rectangle with white border">
+        <img
+          src="img/01-drawing/red-rect.png"
+          alt="rendered red rectangle with white border"
+        />
         <p>
-          The context properties are pretty self-explanatory. The only thing that really bears mentioning is that the styles' string value can be a named color, an rgb or rgba string, or an hsl or hsla string. The <code class="lang-markdown">fillRect</code> method's arguments represent the x and y origin for the rectangle to be drawn from, followed by its width and height. You'll notice a couple of things about this. For a start, our canvas does not use the Cartesian coordinate system you may have learned in school, where the point (0, 0) is located in the middle, with right/up representing positive x/y values and left/down representing negative x/y values. (0, 0) on our canvas is the top left corner, with right/down representing positive x/y values. You'll also notice that the top left corner of our red square aligns with the top left corner of our canvas. The fillRect method's origin coordinates represent the top left corner of the rectangle, with the width and height extending right and down from there, (unless you use negative values, which you can do). Here's another illustration. Let's try to draw a square in the middle of the screen.
+          The context properties are pretty self-explanatory. The only thing
+          that really bears mentioning is that the styles' string value can be a
+          named color, an rgb or rgba string, or an hsl or hsla string. The
+          <code class="lang-markdown">fillRect</code> method's arguments
+          represent the x and y origin for the rectangle to be drawn from,
+          followed by its width and height. You'll notice a couple of things
+          about this. For a start, our canvas does not use the Cartesian
+          coordinate system you may have learned in school, where the point (0,
+          0) is located in the middle, with right/up representing positive x/y
+          values and left/down representing negative x/y values. (0, 0) on our
+          canvas is the top left corner, with right/down representing positive
+          x/y values. You'll also notice that the top left corner of our red
+          square aligns with the top left corner of our canvas. The fillRect
+          method's origin coordinates represent the top left corner of the
+          rectangle, with the width and height extending right and down from
+          there, (unless you use negative values, which you can do). Here's
+          another illustration. Let's try to draw a square in the middle of the
+          screen.
         </p>
         <pre>
           <code class="lang-typescript">
@@ -106,9 +187,15 @@
             ctx.fillRect(canvas.width/2, canvas.height/2, 200, 200);
           </code>
         </pre>
-        <img src="img/01-drawing/offset-green-rect.png" alt="offset green square" />
+        <img
+          src="img/01-drawing/offset-green-rect.png"
+          alt="offset green square"
+        />
         <p>
-          This isn't aligned in the center of our canvas, because we set its origin position to the center of the canvas, but its origin is the top left of the square. If we want to draw this in the center, we'll have to calculate a different origin based on our square's dimensions.
+          This isn't aligned in the center of our canvas, because we set its
+          origin position to the center of the canvas, but its origin is the top
+          left of the square. If we want to draw this in the center, we'll have
+          to calculate a different origin based on our square's dimensions.
         </p>
         <pre>
           <code class="lang-typescript">
@@ -118,13 +205,15 @@
             ctx.fillRect(canvas.width/2 - squareWidth/2, canvas.height/2 - squareHeight/2, 200, 200);
           </code>
         </pre>
-        <img src="img/01-drawing/center-green-rect.png" alt="centered green square">
+        <img
+          src="img/01-drawing/center-green-rect.png"
+          alt="centered green square"
+        />
         <p>
-          We'll be doing this again. It's a lot easier to reason about the position of a rectangle as its center than as its top left corner.
+          We'll be doing this again. It's a lot easier to reason about the
+          position of a rectangle as its center than as its top left corner.
         </p>
-        <p>
-          Let's do circles next.
-        </p>
+        <p>Let's do circles next.</p>
         <pre>
           <code class="lang-typescript">
             ctx.fillStyle = 'deeppink';
@@ -135,9 +224,25 @@
             ctx.stroke();
           </code>
         </pre>
-        <img src="img/01-drawing/pink-circle.png" alt="pink circle">
+        <img src="img/01-drawing/pink-circle.png" alt="pink circle" />
         <p>
-          After we set our style properties, we begin a "path". This path allows us to more or less draw whatever shapes we want. In this case, we are using the <code class="lang-typescript">arc()</code> method to draw... an arc. But we draw it long enough that it eventually connects back to its starting point, making a circle. The first two arguments to this method are the x and y position of the center of our arc. The next argument is its radius. The next two arguments are the starting and ending angles. So you'll see this works kind of like using a compass to draw an arc. We stick our pin at our origin, set the length of our arm, put our pencil down at a certain angle relative to our origin, then trace our arc until we hit our target angle relative to our origin. Now, what's this <code class="lang-typescript">Math.PI * 2</code> business? While we usually think of angles in terms of degrees, we work with radians in this context. 2π radians is equivalent to 360 degrees. There's also an optional argument, which we have omitted, which will allow you to choose whether to draw the arc clockwise or counterclockwise.
+          After we set our style properties, we begin a "path". This path allows
+          us to more or less draw whatever shapes we want. In this case, we are
+          using the <code class="lang-typescript">arc()</code> method to draw...
+          an arc. But we draw it long enough that it eventually connects back to
+          its starting point, making a circle. The first two arguments to this
+          method are the x and y position of the center of our arc. The next
+          argument is its radius. The next two arguments are the starting and
+          ending angles. So you'll see this works kind of like using a compass
+          to draw an arc. We stick our pin at our origin, set the length of our
+          arm, put our pencil down at a certain angle relative to our origin,
+          then trace our arc until we hit our target angle relative to our
+          origin. Now, what's this
+          <code class="lang-typescript">Math.PI * 2</code> business? While we
+          usually think of angles in terms of degrees, we work with radians in
+          this context. 2π radians is equivalent to 360 degrees. There's also an
+          optional argument, which we have omitted, which will allow you to
+          choose whether to draw the arc clockwise or counterclockwise.
         </p>
         <p>
           Let's do one last exercise to demonstrate another use of the "path".
@@ -158,14 +263,30 @@
         </pre>
         <img src="img/01-drawing/gold-triangle.png" alt="gold triangle" />
         <p>
-          Our new methods here are <code class="lang-typescript">ctx.moveTo</code> and <code class="lang-typescript">ctx.lineTo</code>. Each of these has just two arguments, their destination x and y coordinates. Think of <code class="lang-typescript">ctx.moveTo</code> as moving your pen around the canvas <em>without</em> putting the tip down, and <code class="lang-typescript">ctx.lineTo</code> as moving your pen <em>with</em> the tip down. We start our path, move to a starting point, put our pen tip to the canvas, then draw lines to several other points, before finally coming back to our starting point. When we call <code class="lang-typescript">ctx.fill()</code>, it will fill in the shape we have drawn, while <code class="lang-typescript">ctx.stroke()</code> will display the lines we have made with our pen.
+          Our new methods here are
+          <code class="lang-typescript">ctx.moveTo</code> and
+          <code class="lang-typescript">ctx.lineTo</code>. Each of these has
+          just two arguments, their destination x and y coordinates. Think of
+          <code class="lang-typescript">ctx.moveTo</code> as moving your pen
+          around the canvas <em>without</em> putting the tip down, and
+          <code class="lang-typescript">ctx.lineTo</code> as moving your pen
+          <em>with</em> the tip down. We start our path, move to a starting
+          point, put our pen tip to the canvas, then draw lines to several other
+          points, before finally coming back to our starting point. When we call
+          <code class="lang-typescript">ctx.fill()</code>, it will fill in the
+          shape we have drawn, while
+          <code class="lang-typescript">ctx.stroke()</code> will display the
+          lines we have made with our pen.
         </p>
         <p>
-          You can explore the other properties and methods of the 2d canvas context <a href="https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D">here</a>.
+          You can explore the other properties and methods of the 2d canvas
+          context
+          <a
+            href="https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D"
+            >here</a
+          >.
         </p>
-        <p>
-          To wrap this up, let's draw our player.
-        </p>
+        <p>To wrap this up, let's draw our player.</p>
         <pre>
           <code class="lang-typescript">
             const width = 50;
@@ -209,20 +330,43 @@
             ctx.fill();
           </code>
         </pre>
-        <img src="img/01-drawing/character.png" alt="our character">
+        <img src="img/01-drawing/character.png" alt="our character" />
         <p>
-          There's one last important tidbit in here. It's a real pain when drawing a more complex figure to have to position all your points and paths based on the position of the character. To simplify this, we can "translate" the canvas, meaning we can actually shift its origin point, its (0, 0) point, from the top left corner of the canvas to anywhere we want. By using <code class="lang-typescript">ctx.translate</code> and passing in the coordinates of the center of the canvas, can draw our player with all points relative to (0, 0) and avoid a whole bunch of <code class="lang-typescript">+ canvas.width/2</code> and <code class="lang-typescript">+ canvas.height/2</code>. This will also come in necessary when it's time to rotate objects, but we'll save that for when we start controlling our player.
+          There's one last important tidbit in here. It's a real pain when
+          drawing a more complex figure to have to position all your points and
+          paths based on the position of the character. To simplify this, we can
+          "translate" the canvas, meaning we can actually shift its origin
+          point, its (0, 0) point, from the top left corner of the canvas to
+          anywhere we want. By using
+          <code class="lang-typescript">ctx.translate</code> and passing in the
+          coordinates of the center of the canvas, can draw our player with all
+          points relative to (0, 0) and avoid a whole bunch of
+          <code class="lang-typescript">+ canvas.width/2</code> and
+          <code class="lang-typescript">+ canvas.height/2</code>. This will also
+          come in necessary when it's time to rotate objects, but we'll save
+          that for when we start controlling our player.
         </p>
         <p>
-          Take note that every time we set some property of the canvas context, like styling, translating, rotating, all this stuff, the change sticks around until we explicitly change it again. If we know we're going to make a bunch of difficult-to-reverse changes, we can save the current state of the canvas context's properties, then do whatever we want to the context, then restore it back to its old state using the <code class="lang-typescript">ctx.save()</code> and <code class="lang-typescript">ctx.restore()</code> methods. This operation isn't free, however, so you may want to use it sparingly.
+          Take note that every time we set some property of the canvas context,
+          like styling, translating, rotating, all this stuff, the change sticks
+          around until we explicitly change it again. If we know we're going to
+          make a bunch of difficult-to-reverse changes, we can save the current
+          state of the canvas context's properties, then do whatever we want to
+          the context, then restore it back to its old state using the
+          <code class="lang-typescript">ctx.save()</code> and
+          <code class="lang-typescript">ctx.restore()</code> methods. This
+          operation isn't free, however, so you may want to use it sparingly.
         </p>
         <p>
-          Now we can draw to the screen, but that only gets us so far. In our next unit, we'll learn about animations and character control.
+          Now we can draw to the screen, but that only gets us so far. In our
+          next unit, we'll learn about animations and character control.
         </p>
-        <a href="00-setup.html">Previous</a>
-        <a href="02-movement.html">Next</a>
       </section>
     </article>
+    <footer>
+      <a class="prev-link" href="00-setup.html">&lt; 00 - Setup</a>
+      <a class="next-link" href="02-movement.html">02 - Movement &gt;</a>
+    </footer>
     <script src="libs/prism.js"></script>
   </body>
 </html>

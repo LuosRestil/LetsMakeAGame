@@ -10,13 +10,45 @@
   <body>
     <header>
       <div id="title">Let's Make A Game</div>
-      <nav id="nav"></nav>
+      <nav id="nav">
+        <div class="dropdown nav-item">
+          <span>Lessons</span>
+          <div class="dropdown-content">
+            <a href="index.html">Welcome</a>
+            <a href="00-setup.html">00 - Setup</a>
+            <a href="01-drawing.html">01 - Drawing</a>
+            <a href="02-movement.html">02 - Movement</a>
+            <a href="03-vectors.html">03 - Vectors</a>
+            <a href="04-player-control.html">04 - Player Control</a>
+            <a href="05-enemies.html">05 - Enemies</a>
+            <a href="06-projectiles.html">06 - Projectiles</a>
+            <a href="07-collision-detection-1.html">07 - Collisions Pt. 1</a>
+            <a href="08-collision-detection-2.html">08 - Collisions Pt. 2</a>
+            <a href="09-game-over.html">09 - Game Over</a>
+            <a href="10-enemy-enhancement.html">10 - Enemy Enhancements</a>
+            <a href="11-levels-and-scoring.html">11 - Levels and Scoring</a>
+            <a href="12-title-screen.html">12 - Title Screen</a>
+            <a href="13-stars.html">13 - Stars</a>
+            <a href="14-particle-systems.html">14 - Particle Systems</a>
+            <a href="15-sparkles-and-splats.html">15 - Sparkles and Splats</a>
+            <a href="16-sound.html">16 - Sound</a>
+          </div>
+        </div>
+        <a class="nav-item" href="https://github.com/LuosRestil/LMAGSource"
+          >Github</a
+        >
+      </nav>
     </header>
     <article>
       <h1>Title Screen</h1>
       <section>
         <p>
-          Working in the browser makes this really straightforward. We'll create a <code class="lang-markdown">div</code> to hold the content of our title screen, which will be shown when the page loads. Our game canvas will be hidden. When the player chooses to start the game, (we'll just use an "r" keypress, like we do for restarting), we'll hide the title screen <code class="lang-markdown">div</code> and show the canvas.
+          Working in the browser makes this really straightforward. We'll create
+          a <code class="lang-markdown">div</code> to hold the content of our
+          title screen, which will be shown when the page loads. Our game canvas
+          will be hidden. When the player chooses to start the game, (we'll just
+          use an "r" keypress, like we do for restarting), we'll hide the title
+          screen <code class="lang-markdown">div</code> and show the canvas.
         </p>
         <pre>
           <code class="lang-html">
@@ -53,9 +85,11 @@
             }            
           </code>
         </pre>
-        <img src="img/12-title-screen/title-screen.png" alt="title screen">
+        <img src="img/12-title-screen/title-screen.png" alt="title screen" />
         <p>
-          We've got the screen, now we just need to handle that "r" keypress. We'll have to move things around a little bit in <code class="lang-markup">main.ts</code>.
+          We've got the screen, now we just need to handle that "r" keypress.
+          We'll have to move things around a little bit in
+          <code class="lang-markup">main.ts</code>.
         </p>
         <pre>
           <code class="lang-typescript">
@@ -85,19 +119,49 @@
           </code>
         </pre>
         <p>
-          Most of this is pretty self-explanatory, but there is one point of interest. All our other event listeners in this project have been anonymous arrow functions. This one, however, is a named function. There's a good reason for this. The last line of this event listener is very important. Without it, the user can go on pressing "r" and starting up new games until the proverbial cows come home, because the document will continue listening for this keypress unless we tell it to stop. We've used the <code class="lang-typescript">gameOver</code> flag in other parts of our code to short circuit event listener behavior, but we don't have access to that here. We could add another piece of game state just for this, or we could just remove the event listener from the document after the game has started. In order to remove an event listener, however, you have to call <code class="lang-typescript">removeEventListener</code> with the <em>exact same arguments</em> that were used for <code class="lang-typescript">addEventListener</code>. Same event type, same callback. That means we can't use an anonymous function in <code class="lang-typescript">addEventListener</code>, because there's no way for us to pass that same function to <code class="lang-typescript">removeEventListener</code>. Creating a named function allows us to use it in both places and tell the document to stop listening for this keypress event once the game has started.
+          Most of this is pretty self-explanatory, but there is one point of
+          interest. All our other event listeners in this project have been
+          anonymous arrow functions. This one, however, is a named function.
+          There's a good reason for this. The last line of this event listener
+          is very important. Without it, the user can go on pressing "r" and
+          starting up new games until the proverbial cows come home, because the
+          document will continue listening for this keypress unless we tell it
+          to stop. We've used the
+          <code class="lang-typescript">gameOver</code> flag in other parts of
+          our code to short circuit event listener behavior, but we don't have
+          access to that here. We could add another piece of game state just for
+          this, or we could just remove the event listener from the document
+          after the game has started. In order to remove an event listener,
+          however, you have to call
+          <code class="lang-typescript">removeEventListener</code> with the
+          <em>exact same arguments</em> that were used for
+          <code class="lang-typescript">addEventListener</code>. Same event
+          type, same callback. That means we can't use an anonymous function in
+          <code class="lang-typescript">addEventListener</code>, because there's
+          no way for us to pass that same function to
+          <code class="lang-typescript">removeEventListener</code>. Creating a
+          named function allows us to use it in both places and tell the
+          document to stop listening for this keypress event once the game has
+          started.
         </p>
         <video muted controls>
           <source src="vid/12-title-screen/title-screen.mp4" type="video/mp4" />
           Your browser does not support the video tag.
         </video>
         <p>
-          This is a big milestone for us! The game is now fully functional. We have a title screen, the ability to destroy and be destroyed by enemies, levels of increasing difficulty, a score to track our performance, and a game over screen that allows us to restart the game. From now on, we'll be adding polish to take this game to the next level.
+          This is a big milestone for us! The game is now fully functional. We
+          have a title screen, the ability to destroy and be destroyed by
+          enemies, levels of increasing difficulty, a score to track our
+          performance, and a game over screen that allows us to restart the
+          game. From now on, we'll be adding polish to take this game to the
+          next level.
         </p>
-        <a href="11-levels-and-scoring.html">Previous</a>
-        <a href="13-stars.html">Next</a>
       </section>
     </article>
+    <footer>
+      <a class="prev-link" href="11-levels-and-scoring.html">&lt; 11 - Levels and Scoring</a>
+      <a class="next-link" href="13-stars.html">13 - Stars &gt;</a>
+    </footer>
     <script src="libs/prism.js"></script>
   </body>
 </html>

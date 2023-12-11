@@ -10,16 +10,47 @@
   <body>
     <header>
       <div id="title">Let's Make A Game</div>
-      <nav id="nav"></nav>
+      <nav id="nav">
+        <div class="dropdown nav-item">
+          <span>Lessons</span>
+          <div class="dropdown-content">
+            <a href="index.html">Welcome</a>
+            <a href="00-setup.html">00 - Setup</a>
+            <a href="01-drawing.html">01 - Drawing</a>
+            <a href="02-movement.html">02 - Movement</a>
+            <a href="03-vectors.html">03 - Vectors</a>
+            <a href="04-player-control.html">04 - Player Control</a>
+            <a href="05-enemies.html">05 - Enemies</a>
+            <a href="06-projectiles.html">06 - Projectiles</a>
+            <a href="07-collision-detection-1.html">07 - Collisions Pt. 1</a>
+            <a href="08-collision-detection-2.html">08 - Collisions Pt. 2</a>
+            <a href="09-game-over.html">09 - Game Over</a>
+            <a href="10-enemy-enhancement.html">10 - Enemy Enhancements</a>
+            <a href="11-levels-and-scoring.html">11 - Levels and Scoring</a>
+            <a href="12-title-screen.html">12 - Title Screen</a>
+            <a href="13-stars.html">13 - Stars</a>
+            <a href="14-particle-systems.html">14 - Particle Systems</a>
+            <a href="15-sparkles-and-splats.html">15 - Sparkles and Splats</a>
+            <a href="16-sound.html">16 - Sound</a>
+          </div>
+        </div>
+        <a class="nav-item" href="https://github.com/LuosRestil/LMAGSource"
+          >Github</a
+        >
+      </nav>
     </header>
     <article>
       <h1>Enemy Enhancement</h1>
       <section>
         <p>
-          The game is now playable, but very short, and pretty boring. In this section, we'll generate more enemies when the player has cleared the level, and we'll make each enemy more interesting by splitting them into smaller enemies and randomizing their toughness. 
+          The game is now playable, but very short, and pretty boring. In this
+          section, we'll generate more enemies when the player has cleared the
+          level, and we'll make each enemy more interesting by splitting them
+          into smaller enemies and randomizing their toughness.
         </p>
         <p>
-          Let's handle spawning more enemies first. To do this, we'll need to know when the last enemy has been destroyed.
+          Let's handle spawning more enemies first. To do this, we'll need to
+          know when the last enemy has been destroyed.
         </p>
         <pre>
           <code class="lang-typescript">
@@ -39,7 +70,13 @@
           </code>
         </pre>
         <p>
-          At the end of each animation frame, we'll check the length of our <code class="lang-typescript">enemies</code> array. If it's zero, we know that we've destroyed the last enemy. We'll spawn new enemies, get rid of any remaining projectiles, and reset the player position and velocity. This is the second place we've performed an identical player reset, so we'll break it out into a separate function and replace the duplicated code.
+          At the end of each animation frame, we'll check the length of our
+          <code class="lang-typescript">enemies</code> array. If it's zero, we
+          know that we've destroyed the last enemy. We'll spawn new enemies, get
+          rid of any remaining projectiles, and reset the player position and
+          velocity. This is the second place we've performed an identical player
+          reset, so we'll break it out into a separate function and replace the
+          duplicated code.
         </p>
         <pre>
           <code class="lang-typescript">
@@ -52,18 +89,22 @@
             }
           </code>
         </pre>
-        <p>
-          Let's see what this change does for us.
-        </p>
+        <p>Let's see what this change does for us.</p>
         <video muted controls>
-          <source
-            src="vid/10-enemy-enhancement/respawn.mp4"
-            type="video/mp4"
-          />
+          <source src="vid/10-enemy-enhancement/respawn.mp4" type="video/mp4" />
           Your browser does not support the video tag.
         </video>
         <p>
-          We're getting somewhere. Let's handle enemy splitting next. We'll handle this by assigning each enemy a <code class="lang-tyepscript">stage</code> and <code class="lang-typescript">scale</code> property. The stage will let us know whether to split an enemy or destroy it, and the scale will tell us how what size to draw the enemy. We'll also need to add a position to the enemy constructor. Right now they all spawn in at position (0, 0), but when we split the enemy, we'll want to spawn two new enemies at the old enemy's position, not in the corner of the canvas.
+          We're getting somewhere. Let's handle enemy splitting next. We'll
+          handle this by assigning each enemy a
+          <code class="lang-tyepscript">stage</code> and
+          <code class="lang-typescript">scale</code> property. The stage will
+          let us know whether to split an enemy or destroy it, and the scale
+          will tell us how what size to draw the enemy. We'll also need to add a
+          position to the enemy constructor. Right now they all spawn in at
+          position (0, 0), but when we split the enemy, we'll want to spawn two
+          new enemies at the old enemy's position, not in the corner of the
+          canvas.
         </p>
         <pre>
           <code class="lang-typescript">
@@ -92,7 +133,11 @@
           </code>
         </pre>
         <p>
-          The radius is now based on the scale, and we've included a <code class="lang-typescript">baseSize</code> so we can easily tweak this parameter later if we want. Now we'll need to update our enemy spawning and collision detection in <code class="lang-markup">Game.ts</code>.
+          The radius is now based on the scale, and we've included a
+          <code class="lang-typescript">baseSize</code> so we can easily tweak
+          this parameter later if we want. Now we'll need to update our enemy
+          spawning and collision detection in
+          <code class="lang-markup">Game.ts</code>.
         </p>
         <pre>
           <code class="lang-typescript">
@@ -130,7 +175,15 @@
           </code>
         </pre>
         <p>
-          When we have hit an enemy with a projectile, we're checking that enemy's stage. If it's below 3, (we could choose to parameterize this instead of hard coding it), we'll split spawn two new, enemies half the size of the parent and one stage higher. You'll notice a new vector function here, <code class="lang-typescript">copy</code>. We don't want multiple enemies to share the same position vector, since we will be altering it, so instead of setting the new enemy's position equal to that of the parent, we're going to create a new vector with the same x and y values.
+          When we have hit an enemy with a projectile, we're checking that
+          enemy's stage. If it's below 3, (we could choose to parameterize this
+          instead of hard coding it), we'll split spawn two new, enemies half
+          the size of the parent and one stage higher. You'll notice a new
+          vector function here, <code class="lang-typescript">copy</code>. We
+          don't want multiple enemies to share the same position vector, since
+          we will be altering it, so instead of setting the new enemy's position
+          equal to that of the parent, we're going to create a new vector with
+          the same x and y values.
         </p>
         <pre>
           <code class="lang-typescript">
@@ -141,7 +194,9 @@
           </code>
         </pre>
         <p>
-          We've also added an <code class="lang-typescript">enemySplitFactor</code> to our game, so we can choose how many enemies are split off from a destroyed parent.
+          We've also added an
+          <code class="lang-typescript">enemySplitFactor</code> to our game, so
+          we can choose how many enemies are split off from a destroyed parent.
         </p>
         <pre>
           <code class="lang-typescript">
@@ -150,14 +205,14 @@
           </code>
         </pre>
         <video muted controls>
-          <source
-            src="vid/10-enemy-enhancement/splits.mp4"
-            type="video/mp4"
-          />
+          <source src="vid/10-enemy-enhancement/splits.mp4" type="video/mp4" />
           Your browser does not support the video tag.
         </video>
         <p>
-          This works as expected. The enemies split a set number of times, and then are destroyed. Unfortunately, they look a little weird as they get smaller. We'll need to scale their line width as we do their radius.
+          This works as expected. The enemies split a set number of times, and
+          then are destroyed. Unfortunately, they look a little weird as they
+          get smaller. We'll need to scale their line width as we do their
+          radius.
         </p>
         <pre>
           <code class="lang-typescript">
@@ -167,9 +222,16 @@
             // ...
           </code>
         </pre>
-        <img src="img/10-enemy-enhancement.html/enemy-line-scaling.png" alt="enemy line scaling">
+        <img
+          src="img/10-enemy-enhancement.html/enemy-line-scaling.png"
+          alt="enemy line scaling"
+        />
         <p>
-          Much better. Now we can randomly add some more difficult enemies. We'll add a <code class="lang-typescript">requiredHits</code> property to our enemies, randomly set with some probability in the constructor, and we'll also color the enemy accordingly. Then we'll check to see whether there are any more hits required before we destroy an enemy.
+          Much better. Now we can randomly add some more difficult enemies.
+          We'll add a <code class="lang-typescript">requiredHits</code> property
+          to our enemies, randomly set with some probability in the constructor,
+          and we'll also color the enemy accordingly. Then we'll check to see
+          whether there are any more hits required before we destroy an enemy.
         </p>
         <pre>
           <code class="lang-typescript">
@@ -222,19 +284,25 @@
           </code>
         </pre>
         <video muted controls>
-          <source
-            src="vid/10-enemy-enhancement/splits.mp4"
-            type="video/mp4"
-          />
+          <source src="vid/10-enemy-enhancement/splits.mp4" type="video/mp4" />
           Your browser does not support the video tag.
         </video>
         <p>
-          Looks pretty good! We've accomplished all our goals for this section. While this is certainly better than it was before, the player doesn't really have anything new to look forward to when they clear the screen. Each wave of enemies is the same size as the last, and there's no sense of progress. In the next section, we'll keep track of what level we've reached, spawning more and more enemies each time, and we'll give the player a score so they can try to beat their personal best.
+          Looks pretty good! We've accomplished all our goals for this section.
+          While this is certainly better than it was before, the player doesn't
+          really have anything new to look forward to when they clear the
+          screen. Each wave of enemies is the same size as the last, and there's
+          no sense of progress. In the next section, we'll keep track of what
+          level we've reached, spawning more and more enemies each time, and
+          we'll give the player a score so they can try to beat their personal
+          best.
         </p>
-        <a href="09-game-over.html">Previous</a>
-        <a href="11-levels-and-scoring.html">Next</a>
       </section>
     </article>
+    <footer>
+      <a class="prev-link" href="09-game-over.html">&lt; 09 - Game Over</a>
+      <a class="next-link" href="11-levels-and-scoring.html">11 - Levels and Scoring &gt;</a>
+    </footer>
     <script src="libs/prism.js"></script>
   </body>
 </html>

@@ -10,16 +10,55 @@
   <body>
     <header>
       <div id="title">Let's Make A Game</div>
-      <nav id="nav"></nav>
+      <nav id="nav">
+        <div class="dropdown nav-item">
+          <span>Lessons</span>
+          <div class="dropdown-content">
+            <a href="index.html">Welcome</a>
+            <a href="00-setup.html">00 - Setup</a>
+            <a href="01-drawing.html">01 - Drawing</a>
+            <a href="02-movement.html">02 - Movement</a>
+            <a href="03-vectors.html">03 - Vectors</a>
+            <a href="04-player-control.html">04 - Player Control</a>
+            <a href="05-enemies.html">05 - Enemies</a>
+            <a href="06-projectiles.html">06 - Projectiles</a>
+            <a href="07-collision-detection-1.html">07 - Collisions Pt. 1</a>
+            <a href="08-collision-detection-2.html">08 - Collisions Pt. 2</a>
+            <a href="09-game-over.html">09 - Game Over</a>
+            <a href="10-enemy-enhancement.html">10 - Enemy Enhancements</a>
+            <a href="11-levels-and-scoring.html">11 - Levels and Scoring</a>
+            <a href="12-title-screen.html">12 - Title Screen</a>
+            <a href="13-stars.html">13 - Stars</a>
+            <a href="14-particle-systems.html">14 - Particle Systems</a>
+            <a href="15-sparkles-and-splats.html">15 - Sparkles and Splats</a>
+            <a href="16-sound.html">16 - Sound</a>
+          </div>
+        </div>
+        <a class="nav-item" href="https://github.com/LuosRestil/LMAGSource"
+          >Github</a
+        >
+      </nav>
     </header>
     <article>
       <h1>Player Control</h1>
       <section>
         <p>
-          Our desired mechanic is to rotate the player with the left/a and right/d keys, and move them in the direction they're facing with a rocket-like propulsion force. They should continue moving through space in their current direction unless another force acts upon them.
+          Our desired mechanic is to rotate the player with the left/a and
+          right/d keys, and move them in the direction they're facing with a
+          rocket-like propulsion force. They should continue moving through
+          space in their current direction unless another force acts upon them.
         </p>
         <p>
-          First, let's deal with the rotation. We're making extensive use of the <code class="lang-markup">fillRect</code> method to draw our character. This method does not present us with an option to rotate the rectangle. To solve this, we <em>could</em> calculate the positions of all our rectangle vertices, then create and fill a path, but there's a much easier way. We can instead <em>rotate the canvas itself</em>, draw our character the way we always have, then reset the canvas' rotation to continue drawing normally. Let's take a look at how this might work with a little proof of concept.
+          First, let's deal with the rotation. We're making extensive use of the
+          <code class="lang-markup">fillRect</code> method to draw our
+          character. This method does not present us with an option to rotate
+          the rectangle. To solve this, we <em>could</em> calculate the
+          positions of all our rectangle vertices, then create and fill a path,
+          but there's a much easier way. We can instead
+          <em>rotate the canvas itself</em>, draw our character the way we
+          always have, then reset the canvas' rotation to continue drawing
+          normally. Let's take a look at how this might work with a little proof
+          of concept.
         </p>
         <pre>
           <code class="lang-javascript">
@@ -41,9 +80,16 @@
             ctx.fillRect(canvas.width / 2 - squareDimensions / 2, canvas.height / 2 - squareDimensions / 2, squareDimensions, squareDimensions);
           </code>
         </pre>
-        <img src="img/04-player-control/rotation-poc-wrong.png" alt="incorrect rotation" />
+        <img
+          src="img/04-player-control/rotation-poc-wrong.png"
+          alt="incorrect rotation"
+        />
         <p>
-          This looks all wrong. What happened here? Why isn't our square in the middle of the canvas? The canvas rotation takes place <em>around its origin</em>, in this case the top left corner. If we want it to rotate our square around its center instead, we'll have to translate our canvas origin first.
+          This looks all wrong. What happened here? Why isn't our square in the
+          middle of the canvas? The canvas rotation takes place
+          <em>around its origin</em>, in this case the top left corner. If we
+          want it to rotate our square around its center instead, we'll have to
+          translate our canvas origin first.
         </p>
         <pre>
           <code class="lang-javascript">
@@ -54,9 +100,23 @@
             ctx.fillRect(-squareDimensions/2, -squareDimensions/2, squareDimensions, squareDimensions);
           </code>
         </pre>
-        <img src="img/04-player-control/rotation-poc-right.png" alt="incorrect rotation" />
+        <img
+          src="img/04-player-control/rotation-poc-right.png"
+          alt="incorrect rotation"
+        />
         <p>
-          That's much better. Now that we know how this works, we can apply this to our player. We'll give our player an <code lang-typescript>rotation</code> property starting at 0. We'll also give the player a <code class="lang-typescript">rotationSpeed</code> property so we'll know how much to rotate the player each frame. Since all our measurements are going to be scaled by <code class="lang-typescript">dts</code> (delta time in seconds), this value will represent a number of radians per second. (Remember that all of our angular measurements are in radians, not degrees). A full circle is 2π radians, so that's an easy value for us to start with, one full rotation every second.
+          That's much better. Now that we know how this works, we can apply this
+          to our player. We'll give our player an
+          <code lang-typescript>rotation</code> property starting at 0. We'll
+          also give the player a
+          <code class="lang-typescript">rotationSpeed</code> property so we'll
+          know how much to rotate the player each frame. Since all our
+          measurements are going to be scaled by
+          <code class="lang-typescript">dts</code> (delta time in seconds), this
+          value will represent a number of radians per second. (Remember that
+          all of our angular measurements are in radians, not degrees). A full
+          circle is 2π radians, so that's an easy value for us to start with,
+          one full rotation every second.
         </p>
         <pre>
           <code class="lang-typescript">
@@ -65,7 +125,19 @@
           </code>
         </pre>
         <p>
-          Now we can update the player's rotation whenever the appropriate keys are pressed. Let's move all our keypress detection stuff out of <code class="lang-markup">main.ts</code> and into our player class for now so we don't have to worry about importing or injecting it, then get rid of all our old movement code since we won't be using it. Also, since our player is going to be adding some updating logic in addition to its drawing logic, lets create an <code class="lang-typescript">update</code> method to hold this and call it in the <code class="lang-typescript">animate</code> method along with <code class="lang-typescript">player.draw()</code>. It will need <code class="lang-typescript">dts</code> to be passed in as an argument to scale our movements. Here's what our code looks like up to this point.
+          Now we can update the player's rotation whenever the appropriate keys
+          are pressed. Let's move all our keypress detection stuff out of
+          <code class="lang-markup">main.ts</code> and into our player class for
+          now so we don't have to worry about importing or injecting it, then
+          get rid of all our old movement code since we won't be using it. Also,
+          since our player is going to be adding some updating logic in addition
+          to its drawing logic, lets create an
+          <code class="lang-typescript">update</code> method to hold this and
+          call it in the <code class="lang-typescript">animate</code> method
+          along with <code class="lang-typescript">player.draw()</code>. It will
+          need <code class="lang-typescript">dts</code> to be passed in as an
+          argument to scale our movements. Here's what our code looks like up to
+          this point.
         </p>
         <pre>
           <code class="lang-typescript">
@@ -135,9 +207,7 @@
             }
           </code>
         </pre>
-        <p>
-          Handling the logic of rotation here will be pretty simple.
-        </p>
+        <p>Handling the logic of rotation here will be pretty simple.</p>
         <pre>
           <code class="lang-typescript">
             update(dts: number): void {
@@ -147,7 +217,8 @@
           </code>
         </pre>
         <p>
-          We won't see these changes reflected on the screen until we update our <code class="lang-typescript">draw</code> method as well.
+          We won't see these changes reflected on the screen until we update our
+          <code class="lang-typescript">draw</code> method as well.
         </p>
         <pre>
           <code class="lang-typescript">
@@ -167,7 +238,17 @@
           Your browser does not support the video tag.
         </video>
         <p>
-          Now let's get the forward motion worked out. We are going to use Euler integration for to make this happen. The concept is simple. Our player, (or any other entity that we want to move), has a position vector, a velocity vector, and an acceleration vector. Position represents a location on our canvas (obviously). Velocity represents a change in our position. Acceleration represents a change in our velocity. Each frame, we will update our position by adding the acceleration to the velocity, then adding the velocity to the position. Let's see this in action. First, we'll give our player velocity and acceleration properties, then put Euler integration logic into our <code class="lang-typescript">update</code> method.
+          Now let's get the forward motion worked out. We are going to use Euler
+          integration for to make this happen. The concept is simple. Our
+          player, (or any other entity that we want to move), has a position
+          vector, a velocity vector, and an acceleration vector. Position
+          represents a location on our canvas (obviously). Velocity represents a
+          change in our position. Acceleration represents a change in our
+          velocity. Each frame, we will update our position by adding the
+          acceleration to the velocity, then adding the velocity to the
+          position. Let's see this in action. First, we'll give our player
+          velocity and acceleration properties, then put Euler integration logic
+          into our <code class="lang-typescript">update</code> method.
         </p>
         <pre>
           <code class="lang-typescript">
@@ -189,7 +270,13 @@
           </code>
         </pre>
         <p>
-          We're applying a propulsion force, (we'll get to this in a moment), which will update our player's acceleration, then we add this acceleration (scaled by dts) to our velocity, then we add our velocity (scaled by dts) to our position. At the very end, we'll reset our acceleration to 0, (otherwise, we'll only add to it every single frame and we'll soon rocket out of control). Let's look at adding our propulsion force.
+          We're applying a propulsion force, (we'll get to this in a moment),
+          which will update our player's acceleration, then we add this
+          acceleration (scaled by dts) to our velocity, then we add our velocity
+          (scaled by dts) to our position. At the very end, we'll reset our
+          acceleration to 0, (otherwise, we'll only add to it every single frame
+          and we'll soon rocket out of control). Let's look at adding our
+          propulsion force.
         </p>
         <pre>
           <code class="lang-typescript">
@@ -201,14 +288,49 @@
           </code>
         </pre>
         <p>
-          Since we want to propel our player in the direction we're facing, we first have to get a vector that points in that direction. That's what our <code class="lang-typescript">Vec2.fromAngle</code> method accomplishes. It's going to create a unit vector (we only care about the direction right now) pointing the way our player is facing. (We'll see how that's done after we finish going through this method). Now that we have the direction worked out, we need to set just <em>how much</em> propulsion force we're going to generate by manipulating the vector's magnitude. We'll give the player a <code class="lang-typescript">propulsionForce</code> property, and we can tweak this value until the movement feels good to us. (I've started mine at 1000). Now that we have both the direction and the magnitude of our propulsionForce in place, we'll add this to our acceleration.
+          Since we want to propel our player in the direction we're facing, we
+          first have to get a vector that points in that direction. That's what
+          our <code class="lang-typescript">Vec2.fromAngle</code> method
+          accomplishes. It's going to create a unit vector (we only care about
+          the direction right now) pointing the way our player is facing. (We'll
+          see how that's done after we finish going through this method). Now
+          that we have the direction worked out, we need to set just
+          <em>how much</em> propulsion force we're going to generate by
+          manipulating the vector's magnitude. We'll give the player a
+          <code class="lang-typescript">propulsionForce</code> property, and we
+          can tweak this value until the movement feels good to us. (I've
+          started mine at 1000). Now that we have both the direction and the
+          magnitude of our propulsionForce in place, we'll add this to our
+          acceleration.
         </p>
         <p>
-          Now, how can we generate a vector from an angle? For this, we can do some <a href="https://www.mathsisfun.com/algebra/sohcahtoa.html">basic trigonometry</a>.
+          Now, how can we generate a vector from an angle? For this, we can do
+          some
+          <a href="https://www.mathsisfun.com/algebra/sohcahtoa.html"
+            >basic trigonometry</a
+          >.
         </p>
-        <img src="img/04-player-control/unit-vector-from-angle.png" alt="geometry of unit vector from angle" />
+        <img
+          src="img/04-player-control/unit-vector-from-angle.png"
+          alt="geometry of unit vector from angle"
+        />
         <p>
-          Our direction vector will form a right triangle with the x and y axes of our canvas, which allows us to perform trigonometric calculations. Our vectors x coordinate lies at the end of the adjacent side and its y coordinate lies at the end of the opposite side. So we need to find the length of the adjacent for our x coordinate and the length of the opposite for our y coordinate. We're going to create a unit vector, which has a magnitude of 1. The hypotenuse of our right triangle represents our vector, so we know that the hypotenuse will have a length of 1. We also know the angle we're calculating for. We now have all the information we need to find the lengths of the opposite and adjacent sides. sin(angle) = opposite / 1 and cos(angle) = adjacent / 1. We can simplify this to say that sin(angle) = opposite and cos(angle) = adjacent. If this doesn't make complete sense, <a href="https://www.mathsisfun.com/geometry/unit-circle.html">here's a more in depth explanation</a>. Let's add this method to our Vec2 class.
+          Our direction vector will form a right triangle with the x and y axes
+          of our canvas, which allows us to perform trigonometric calculations.
+          Our vectors x coordinate lies at the end of the adjacent side and its
+          y coordinate lies at the end of the opposite side. So we need to find
+          the length of the adjacent for our x coordinate and the length of the
+          opposite for our y coordinate. We're going to create a unit vector,
+          which has a magnitude of 1. The hypotenuse of our right triangle
+          represents our vector, so we know that the hypotenuse will have a
+          length of 1. We also know the angle we're calculating for. We now have
+          all the information we need to find the lengths of the opposite and
+          adjacent sides. sin(angle) = opposite / 1 and cos(angle) = adjacent /
+          1. We can simplify this to say that sin(angle) = opposite and
+          cos(angle) = adjacent. If this doesn't make complete sense,
+          <a href="https://www.mathsisfun.com/geometry/unit-circle.html"
+            >here's a more in depth explanation</a
+          >. Let's add this method to our Vec2 class.
         </p>
         <pre>
           <code class="lang-typescript">
@@ -220,7 +342,11 @@
           </code>
         </pre>
         <p>
-          We can actually add a parameter here to take care of scaling our vector to the size we want, as a matter of convenience, so we don't have to scale it separately each time we use it. Let's go back and use this in our <code class="lang-typescript">addPropulsionForce</code> method.
+          We can actually add a parameter here to take care of scaling our
+          vector to the size we want, as a matter of convenience, so we don't
+          have to scale it separately each time we use it. Let's go back and use
+          this in our
+          <code class="lang-typescript">addPropulsionForce</code> method.
         </p>
         <pre>
           <code class="lang-typescript">
@@ -230,18 +356,21 @@
             }
           </code>
         </pre>
-        <p>
-          All the pieces are in place! Let's move!
-        </p>
+        <p>All the pieces are in place! Let's move!</p>
         <video muted controls>
           <source src="vid/04-player-control/movement.mp4" type="video/mp4" />
           Your browser does not support the video tag.
         </video>
         <p>
-          Because we're not resetting our velocity after each frame, we will retain our momentum, simulating drifting through space, exactly as we want.
+          Because we're not resetting our velocity after each frame, we will
+          retain our momentum, simulating drifting through space, exactly as we
+          want.
         </p>
         <p>
-          Unfortunately, it doesn't take us long at all to fly right off the screen, never to be seen or heard from again. Let's fix that by allowing us to wrap back to the other side of the screen if we go out of bounds.
+          Unfortunately, it doesn't take us long at all to fly right off the
+          screen, never to be seen or heard from again. Let's fix that by
+          allowing us to wrap back to the other side of the screen if we go out
+          of bounds.
         </p>
         <pre>
           <code class="lang-typescript">
@@ -261,14 +390,23 @@
           </code>
         </pre>
         <p>
-          We'll add this to the end of our <code class="lang-typescript">update</code>method. If our position on either axis is out of bounds, we just set it to the opposite boundary. 
+          We'll add this to the end of our
+          <code class="lang-typescript">update</code>method. If our position on
+          either axis is out of bounds, we just set it to the opposite boundary.
         </p>
         <video muted controls>
-          <source src="vid/04-player-control/screen-wrap.mp4" type="video/mp4" />
+          <source
+            src="vid/04-player-control/screen-wrap.mp4"
+            type="video/mp4"
+          />
           Your browser does not support the video tag.
         </video>
         <p>
-          Our controls are almost perfect now. We just have one more problem to resolve, and that is that there's nothing stopping us from accelerating indefintely, going faster and faster until the game is no longer playable. We're going to implement a maximum velocity for the player in order to avoid this.
+          Our controls are almost perfect now. We just have one more problem to
+          resolve, and that is that there's nothing stopping us from
+          accelerating indefintely, going faster and faster until the game is no
+          longer playable. We're going to implement a maximum velocity for the
+          player in order to avoid this.
         </p>
         <pre>
           <code class="lang-typescript">
@@ -289,18 +427,26 @@
           </code>
         </pre>
         <p>
-          We're just checking the magnitude of our velocity vector and setting back to the maximum if it ever goes past it.
+          We're just checking the magnitude of our velocity vector and setting
+          back to the maximum if it ever goes past it.
         </p>
         <p>
-          And that's it! Our character movement is complete. Of course you can tweak the <code class="lang-typescript">rotationSpeed</code>, <code class="lang-typescript">propulsionForce</code>, and <code class="lang-typescript">maxVel</code> to your taste.
+          And that's it! Our character movement is complete. Of course you can
+          tweak the <code class="lang-typescript">rotationSpeed</code>,
+          <code class="lang-typescript">propulsionForce</code>, and
+          <code class="lang-typescript">maxVel</code> to your taste.
         </p>
         <p>
-          Right now, we're just flying around space by ourselves. As much fun as that is, it would be even better if we had some enemies to battle. We'll start adding that next.
+          Right now, we're just flying around space by ourselves. As much fun as
+          that is, it would be even better if we had some enemies to battle.
+          We'll start adding that next.
         </p>
-        <a href="03-vectors.html">Previous</a>
-        <a href="05-enemies.html">Next</a>
       </section>
     </article>
+    <footer>
+      <a class="prev-link" href="03-vectors.html">&lt; 03 - Vectors</a>
+      <a class="next-link" href="05-enemies.html">05 - Enemies &gt;</a>
+    </footer>
     <script src="libs/prism.js"></script>
   </body>
 </html>

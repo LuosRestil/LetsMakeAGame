@@ -10,19 +10,64 @@
   <body>
     <header>
       <div id="title">Let's Make A Game</div>
-      <nav id="nav"></nav>
+      <nav id="nav">
+        <div class="dropdown nav-item">
+          <span>Lessons</span>
+          <div class="dropdown-content">
+            <a href="index.html">Welcome</a>
+            <a href="00-setup.html">00 - Setup</a>
+            <a href="01-drawing.html">01 - Drawing</a>
+            <a href="02-movement.html">02 - Movement</a>
+            <a href="03-vectors.html">03 - Vectors</a>
+            <a href="04-player-control.html">04 - Player Control</a>
+            <a href="05-enemies.html">05 - Enemies</a>
+            <a href="06-projectiles.html">06 - Projectiles</a>
+            <a href="07-collision-detection-1.html">07 - Collisions Pt. 1</a>
+            <a href="08-collision-detection-2.html">08 - Collisions Pt. 2</a>
+            <a href="09-game-over.html">09 - Game Over</a>
+            <a href="10-enemy-enhancement.html">10 - Enemy Enhancements</a>
+            <a href="11-levels-and-scoring.html">11 - Levels and Scoring</a>
+            <a href="12-title-screen.html">12 - Title Screen</a>
+            <a href="13-stars.html">13 - Stars</a>
+            <a href="14-particle-systems.html">14 - Particle Systems</a>
+            <a href="15-sparkles-and-splats.html">15 - Sparkles and Splats</a>
+            <a href="16-sound.html">16 - Sound</a>
+          </div>
+        </div>
+        <a class="nav-item" href="https://github.com/LuosRestil/LMAGSource"
+          >Github</a
+        >
+      </nav>
     </header>
     <article>
       <h1>Collisions Pt. 2</h1>
       <section>
         <p>
-          Determining the distances between circles is very straightforward. It's just the distance from between their centers minus their radii. But how do you find the distance between a circle and a rectangle? A rectangle doesn't have a radius. The distance from the outside edge to the center varies depending on <em>where</em> on the edge we're calculating from. It's kind of a tricky problem, but in our description of the problem, we've already begun to get some idea of how this might work. We have to find out what point on the rectangle is closest to the circle. Then we can get the distance between this point and the center of the circle. If that distance is smaller than the circle's radius, we know that point is inside the circle, and the shapes must be touching.
+          Determining the distances between circles is very straightforward.
+          It's just the distance from between their centers minus their radii.
+          But how do you find the distance between a circle and a rectangle? A
+          rectangle doesn't have a radius. The distance from the outside edge to
+          the center varies depending on <em>where</em> on the edge we're
+          calculating from. It's kind of a tricky problem, but in our
+          description of the problem, we've already begun to get some idea of
+          how this might work. We have to find out what point on the rectangle
+          is closest to the circle. Then we can get the distance between this
+          point and the center of the circle. If that distance is smaller than
+          the circle's radius, we know that point is inside the circle, and the
+          shapes must be touching.
         </p>
         <p>
-          Finding the closest point on an arbitrarily rotated rectangle, however, is quite a bit easier said than done. (This rotated rectangle is generally referred to as an Oriented Bounding Box, and we'll use this term, abbreviated "OBB", moving forward.) It's a good bit easier to find the closest point on a rectangle with <em>no</em> rotation, (an Axis-Aligned Bounding Box, or "AABB" from here on), so we'll start with that to get the general ideas under our belts.
+          Finding the closest point on an arbitrarily rotated rectangle,
+          however, is quite a bit easier said than done. (This rotated rectangle
+          is generally referred to as an Oriented Bounding Box, and we'll use
+          this term, abbreviated "OBB", moving forward.) It's a good bit easier
+          to find the closest point on a rectangle with <em>no</em> rotation,
+          (an Axis-Aligned Bounding Box, or "AABB" from here on), so we'll start
+          with that to get the general ideas under our belts.
         </p>
         <p>
-          Let's build out a proof of concept. We'll start with some boilerplate and helper functions.
+          Let's build out a proof of concept. We'll start with some boilerplate
+          and helper functions.
         </p>
         <pre>
           <code class="lang-javascript">
@@ -107,17 +152,34 @@
           </code>
         </pre>
         <p>
-          Just as with our circle-circle collision proof of concept, we have our drawing surface, shapes, mouse control, and an animation loop. We have helper functions to make drawing circles and lines easier, (maybe we should use these in our main project...), and a bunch of math helper functions. Most of this is the exact same vector stuff that we have in our main project, just without the <code class="lang-typescript">Vec2</code> class, representing vectors as a 2d array rather than an object with x and y coordinates. We're just hashing stuff out here.
+          Just as with our circle-circle collision proof of concept, we have our
+          drawing surface, shapes, mouse control, and an animation loop. We have
+          helper functions to make drawing circles and lines easier, (maybe we
+          should use these in our main project...), and a bunch of math helper
+          functions. Most of this is the exact same vector stuff that we have in
+          our main project, just without the
+          <code class="lang-typescript">Vec2</code> class, representing vectors
+          as a 2d array rather than an object with x and y coordinates. We're
+          just hashing stuff out here.
         </p>
         <p>
-          There are two things that you will not have seen to this point. The first is the <code class="lang-javascript">clamp</code> function. What this does is fit a given value into a min-max range. So, for example, if we pass it a value of 5, a min of 1 and a max of 10, it just return our value, 5, since 5 already falls in the given range. But if we passed a value of -1 with the same min and max, we'd get back a 1, since it will raise our value up to the minimum. Similarly, a value of 100 with the same min and max would return 10, since that's the max.
+          There are two things that you will not have seen to this point. The
+          first is the <code class="lang-javascript">clamp</code> function. What
+          this does is fit a given value into a min-max range. So, for example,
+          if we pass it a value of 5, a min of 1 and a max of 10, it just return
+          our value, 5, since 5 already falls in the given range. But if we
+          passed a value of -1 with the same min and max, we'd get back a 1,
+          since it will raise our value up to the minimum. Similarly, a value of
+          100 with the same min and max would return 10, since that's the max.
         </p>
         <p>
-          The second is the the <code class="lang-javascript">dot</code> function, which gives us the "dot product" of two vectors. This is just the x values multiplied together plus the y values multipled together. We'll see what this does for us when we move on to working with the OBB.
+          The second is the the
+          <code class="lang-javascript">dot</code> function, which gives us the
+          "dot product" of two vectors. This is just the x values multiplied
+          together plus the y values multipled together. We'll see what this
+          does for us when we move on to working with the OBB.
         </p>
-        <p>
-          Let's work out what we want to do in our animation loop.
-        </p>
+        <p>Let's work out what we want to do in our animation loop.</p>
         <pre>
           <code class="lang-javascript">
             function animate() {
@@ -152,9 +214,11 @@
             }
           </code>
         </pre>
-        <img src="img/08-collision-detection-2/aabb-1.png" alt="shapes">
+        <img src="img/08-collision-detection-2/aabb-1.png" alt="shapes" />
         <p>
-          Simple enough. We set some styles, draw our shapes, then check for a collision, writing a status message based on what we found. Time for the fun stuff. Let's make our collision detection function.
+          Simple enough. We set some styles, draw our shapes, then check for a
+          collision, writing a status message based on what we found. Time for
+          the fun stuff. Let's make our collision detection function.
         </p>
         <pre>
           <code class="lang-javascript">
@@ -173,9 +237,12 @@
             }
           </code>
         </pre>
-        <img src="img/08-collision-detection-2/aabb-2.png" alt="aabb axes">
+        <img src="img/08-collision-detection-2/aabb-2.png" alt="aabb axes" />
         <p>
-          To find the nearest point on the AABB to our circle, we have to find where the circle lies in relation to the rectangle for each axis. I know that probably doesn't make a whole lot of sense, but it becomes a lot clearer when we see it in action.
+          To find the nearest point on the AABB to our circle, we have to find
+          where the circle lies in relation to the rectangle for each axis. I
+          know that probably doesn't make a whole lot of sense, but it becomes a
+          lot clearer when we see it in action.
         </p>
         <pre>
           <code class="lang-javascript">
@@ -197,19 +264,40 @@
             }
           </code>
         </pre>
-        <img src="img/08-collision-detection-2/aabb-3.png" alt="axis projections">
+        <img
+          src="img/08-collision-detection-2/aabb-3.png"
+          alt="axis projections"
+        />
         <p>
-          The red dot represents where the circle sits in relation to the rectangle's x axis. The blue dot represents where the circle sits in relation to the rectangle's y axis. We're just focusing on each axis separately, one at a time. You can see that since the rectangle is to the left of the rectangle (x axis), the red dot is to the left. Since the circle is above the circle, (y axis), the blue dot is above.
+          The red dot represents where the circle sits in relation to the
+          rectangle's x axis. The blue dot represents where the circle sits in
+          relation to the rectangle's y axis. We're just focusing on each axis
+          separately, one at a time. You can see that since the rectangle is to
+          the left of the rectangle (x axis), the red dot is to the left. Since
+          the circle is above the circle, (y axis), the blue dot is above.
         </p>
-        <img src="img/08-collision-detection-2/aabb-4.png" alt="axis projections again">
+        <img
+          src="img/08-collision-detection-2/aabb-4.png"
+          alt="axis projections again"
+        />
         <p>
-          Here you can see the red dot only extends partially across the rectangle, because the circle's x position sits within the rectangle on the x axis.
+          Here you can see the red dot only extends partially across the
+          rectangle, because the circle's x position sits within the rectangle
+          on the x axis.
         </p>
         <p>
-          I hope it's now clear what we mean when we say we have to find where the circle lies in relation to the rectangle. What we eventually want to know is where the nearest point on the square is, and we do this by finding the nearest point <em>on each axis</em>, then using that to determine our final nearest point.
+          I hope it's now clear what we mean when we say we have to find where
+          the circle lies in relation to the rectangle. What we eventually want
+          to know is where the nearest point on the square is, and we do this by
+          finding the nearest point <em>on each axis</em>, then using that to
+          determine our final nearest point.
         </p>
         <p>
-          When our circle is far away from the rectangle on either axis, the red/blue dot extends far beyond the boundaries of the rectangle. We're interested in finding the nearest point on each axis <em>on</em> the square, so we have to <code class="lang-javascript">clamp</code> these points to the square's boundaries.
+          When our circle is far away from the rectangle on either axis, the
+          red/blue dot extends far beyond the boundaries of the rectangle. We're
+          interested in finding the nearest point on each axis <em>on</em> the
+          square, so we have to <code class="lang-javascript">clamp</code> these
+          points to the square's boundaries.
         </p>
         <pre>
           <code class="lang-javascript">
@@ -227,16 +315,28 @@
             }
           </code>
         </pre>
-        <img src="img/08-collision-detection-2/aabb-5.png" alt="clamped axis projection">
+        <img
+          src="img/08-collision-detection-2/aabb-5.png"
+          alt="clamped axis projection"
+        />
         <p>
-          Now you can see that even though the circle is quite far away from the rectangle, the dots are not extending outside its boundaries.
+          Now you can see that even though the circle is quite far away from the
+          rectangle, the dots are not extending outside its boundaries.
         </p>
-        <img src="img/08-collision-detection-2/aabb-6.png" alt="clamped axis projections again">
+        <img
+          src="img/08-collision-detection-2/aabb-6.png"
+          alt="clamped axis projections again"
+        />
         <p>
-          Since <code class="lang-javascript">clamp</code> just gives us back the value we passed in if it falls within the given min-max range, you can see that the red dot still sits partially along the rectangle's x axis when the circle sits within the rectangle on that axis.
+          Since <code class="lang-javascript">clamp</code> just gives us back
+          the value we passed in if it falls within the given min-max range, you
+          can see that the red dot still sits partially along the rectangle's x
+          axis when the circle sits within the rectangle on that axis.
         </p>
         <p>
-          Now we have the closest point to the circle on the x and y axes, and that's all the information we need! The combination of these two things is our goal, the closest point on the rectangle to the circle. 
+          Now we have the closest point to the circle on the x and y axes, and
+          that's all the information we need! The combination of these two
+          things is our goal, the closest point on the rectangle to the circle.
         </p>
         <pre>
           <code class="lang-javascript">
@@ -259,7 +359,12 @@
           Your browser does not support the video tag.
         </video>
         <p>
-          You can see that as we move our circle around the rectangle, the yellow circle follows around, showing us the closest point on the square. The final step of collision detection here is simple. We just need to find out how far that point is from our circle. If that distance is smaller than our circle's radius, it must be within our circle, and we have a collision!
+          You can see that as we move our circle around the rectangle, the
+          yellow circle follows around, showing us the closest point on the
+          square. The final step of collision detection here is simple. We just
+          need to find out how far that point is from our circle. If that
+          distance is smaller than our circle's radius, it must be within our
+          circle, and we have a collision!
         </p>
         <pre>
           <code class="lang-javascript">
@@ -284,10 +389,13 @@
           Your browser does not support the video tag.
         </video>
         <p>
-          Now we are successfully detecting collisions between an AABB and a circle! Armed with an understanding of this process, we're ready to tackle the problem with an OBB.
+          Now we are successfully detecting collisions between an AABB and a
+          circle! Armed with an understanding of this process, we're ready to
+          tackle the problem with an OBB.
         </p>
         <p>
-          Our setup will be just about the same as with the AABB, with only a couple of variations.
+          Our setup will be just about the same as with the AABB, with only a
+          couple of variations.
         </p>
         <pre>
           <code class="lang-javascript">
@@ -325,12 +433,20 @@
             // helper functions...
           </code>
         </pre>
-        <img src="img/08-collision-detection-2/obb-1.png" alt="shapes">
+        <img src="img/08-collision-detection-2/obb-1.png" alt="shapes" />
         <p>
-          All of this should look familiar. Now we just have to work out the collision detection function.
+          All of this should look familiar. Now we just have to work out the
+          collision detection function.
         </p>
         <p>
-          At a high level, this will work exactly the same way as the AABB. We're going to find the nearest point on the rectangle to the circle and check the distance. And to do this, we're going to find the nearest point on the x axis and the nearest point on the y axis. <em>BUT...</em> These axes are not the axes of the canvas. They will instead be the <em>local</em> axes of the OBB. Again, this is a tough thing to conceptualize, so we're going to visualize each step of the process.
+          At a high level, this will work exactly the same way as the AABB.
+          We're going to find the nearest point on the rectangle to the circle
+          and check the distance. And to do this, we're going to find the
+          nearest point on the x axis and the nearest point on the y axis.
+          <em>BUT...</em> These axes are not the axes of the canvas. They will
+          instead be the <em>local</em> axes of the OBB. Again, this is a tough
+          thing to conceptualize, so we're going to visualize each step of the
+          process.
         </p>
         <pre>
           <code class="lang-javascript">
@@ -363,15 +479,37 @@
             }
           </code>
         </pre>
-        <img src="img/08-collision-detection-2/obb-2.png" alt="obb local axes">
+        <img
+          src="img/08-collision-detection-2/obb-2.png"
+          alt="obb local axes"
+        />
         <p>
-          Here we can see what we mean by the rectangle's "local" axes!. Just as with our AABB, the red line is the rectangle's x axis and the blue line is the y axis.
+          Here we can see what we mean by the rectangle's "local" axes!. Just as
+          with our AABB, the red line is the rectangle's x axis and the blue
+          line is the y axis.
         </p>
         <p>
-          The <code class="lang-javascript">localXAxis</code> and <code class="lang-javascript">localYAxis</code> variables are unit vectors, calculated much as we calculated the propulsion force direction for our player. Now, you'll notice that when we're drawing the representation of these axes on the screen, we're not drawing the vectors as-is. This is for a couple of reasons. For one thing, a unit vector is only going to be one pixel long, so it won't show up on the screen unless we scale it. In this case, we're actually scaling it in two directions so it takes up the whole width/height of the square. For another, we have to move the origin of this vector to the middle of the rectangle by adding the rectangle's position vector. As always, a vector is just a magnitude and direction, and when we draw it as a position on the canvas, we have to take its origin into account if we want it to be drawn where we expect. You'll see this over and over as we are drawing the vectors used in our calculations.
+          The <code class="lang-javascript">localXAxis</code> and
+          <code class="lang-javascript">localYAxis</code> variables are unit
+          vectors, calculated much as we calculated the propulsion force
+          direction for our player. Now, you'll notice that when we're drawing
+          the representation of these axes on the screen, we're not drawing the
+          vectors as-is. This is for a couple of reasons. For one thing, a unit
+          vector is only going to be one pixel long, so it won't show up on the
+          screen unless we scale it. In this case, we're actually scaling it in
+          two directions so it takes up the whole width/height of the square.
+          For another, we have to move the origin of this vector to the middle
+          of the rectangle by adding the rectangle's position vector. As always,
+          a vector is just a magnitude and direction, and when we draw it as a
+          position on the canvas, we have to take its origin into account if we
+          want it to be drawn where we expect. You'll see this over and over as
+          we are drawing the vectors used in our calculations.
         </p>
         <p>
-          Now it's time to work out how to find the closest point on the rectangle on its local x and y axes. First, we'll get a vector pointing from the OBB to the circle. (Remember that we can do this with subtraction).
+          Now it's time to work out how to find the closest point on the
+          rectangle on its local x and y axes. First, we'll get a vector
+          pointing from the OBB to the circle. (Remember that we can do this
+          with subtraction).
         </p>
         <pre>
           <code class="lang-javascript">
@@ -393,20 +531,55 @@
             // draw center of each shape...
           </code>
         </pre>
-        <img src="img/08-collision-detection-2/obb-3.png" alt="D vector">
+        <img src="img/08-collision-detection-2/obb-3.png" alt="D vector" />
         <p>
-          Having this vector allows us to perform a great trick. Using the dot product of two vectors allows us to "project" one vector upon another. The formula for this is <code class="lang-typescript">dot(vector1, vector2) / mag(vector2)</code>Let's look at an illustration.
+          Having this vector allows us to perform a great trick. Using the dot
+          product of two vectors allows us to "project" one vector upon another.
+          The formula for this is
+          <code class="lang-typescript"
+            >dot(vector1, vector2) / mag(vector2)</code
+          >Let's look at an illustration.
         </p>
-        <img src="img/08-collision-detection-2/projection-1.png" alt="scalar projection">
+        <img
+          src="img/08-collision-detection-2/projection-1.png"
+          alt="scalar projection"
+        />
         <p>
-          Imagine we are shining a light perpendicular to one of our vectors, (the blue one, in this illustration). The dot product of the two vectors represents the "shadow", if you will, of one vector, (the red), upon the other, (the blue), represented here by the dotted green line. This shadow illustration helps us conceptualize the concept, but to be more precise, the dot product gives us a scalar value that tells us the length along a local axis that is shared by both vectors. In this case, the local axis we're talking about is the blue vector, and the dotted green line is the length that is shared. This scalar value is known as the "scalar projection" of one vector upon another. We can use this scalar projection to create a vector if we choose, which is called the "vector projection". In this case, we would make a unit vector with the same direction as the blue vector, then we'd scale it by the dot product.
+          Imagine we are shining a light perpendicular to one of our vectors,
+          (the blue one, in this illustration). The dot product of the two
+          vectors represents the "shadow", if you will, of one vector, (the
+          red), upon the other, (the blue), represented here by the dotted green
+          line. This shadow illustration helps us conceptualize the concept, but
+          to be more precise, the dot product gives us a scalar value that tells
+          us the length along a local axis that is shared by both vectors. In
+          this case, the local axis we're talking about is the blue vector, and
+          the dotted green line is the length that is shared. This scalar value
+          is known as the "scalar projection" of one vector upon another. We can
+          use this scalar projection to create a vector if we choose, which is
+          called the "vector projection". In this case, we would make a unit
+          vector with the same direction as the blue vector, then we'd scale it
+          by the dot product.
         </p>
         <p>
-          We talked about this "shared" length along a local axis, but what happens when we have an angle between two vectors that is greater than 90 degrees? We won't have any shared length. This can be a little confusing, but it's really nothing for us to get hung up on. In this case, it just happens that the dot product will be <em>negative</em>, (less than zero shared space, because one vector covers space along the local axis that the other does not), and we can continue to visualize the relationship between the vectors in the same way.
+          We talked about this "shared" length along a local axis, but what
+          happens when we have an angle between two vectors that is greater than
+          90 degrees? We won't have any shared length. This can be a little
+          confusing, but it's really nothing for us to get hung up on. In this
+          case, it just happens that the dot product will be <em>negative</em>,
+          (less than zero shared space, because one vector covers space along
+          the local axis that the other does not), and we can continue to
+          visualize the relationship between the vectors in the same way.
         </p>
-        <img src="img/08-collision-detection-2/projection-2.png" alt="negative scalar projection">
+        <img
+          src="img/08-collision-detection-2/projection-2.png"
+          alt="negative scalar projection"
+        />
         <p>
-          We used some key phrasing a moment ago. We said the dot product gives us the length <em>along a local axis</em> that is shared by both vectors. Since we're working with the local axes of an OBB, that sounds like exactly what we need to find our nearest x and y points in the OBB's local space. Let's give this a shot.
+          We used some key phrasing a moment ago. We said the dot product gives
+          us the length <em>along a local axis</em> that is shared by both
+          vectors. Since we're working with the local axes of an OBB, that
+          sounds like exactly what we need to find our nearest x and y points in
+          the OBB's local space. Let's give this a shot.
         </p>
         <pre>
           <code class="lang-javascript">
@@ -433,13 +606,31 @@
             drawCircle(drawableProjY[0], drawableProjY[1], 10);
           </code>
         </pre>
-        <img src="img/08-collision-detection-2/obb-4.png" alt="obb vector projection">
+        <img
+          src="img/08-collision-detection-2/obb-4.png"
+          alt="obb vector projection"
+        />
         <p>
-          You can see how we've projected our D vector onto the local axes of the rectangle. You'll notice you don't see exactly the formula that we showed earlier for calculating scalar projection. We've left off the division part. Since the magnitude of the vector we're projecting onto is 1, it won't have any affect on our calculation. Comparing this illustration to our AABB's diagram at this stage should look <em>very</em> familiar:
+          You can see how we've projected our D vector onto the local axes of
+          the rectangle. You'll notice you don't see exactly the formula that we
+          showed earlier for calculating scalar projection. We've left off the
+          division part. Since the magnitude of the vector we're projecting onto
+          is 1, it won't have any affect on our calculation. Comparing this
+          illustration to our AABB's diagram at this stage should look
+          <em>very</em> familiar:
         </p>
-        <img src="img/08-collision-detection-2/aabb-3.png" alt="aabb axis projections">
+        <img
+          src="img/08-collision-detection-2/aabb-3.png"
+          alt="aabb axis projections"
+        />
         <p>
-          We can now see how far along each local axis the circle is, just as we did with the AABB. And the next step is also the same. We need to clamp these values to the boundaries of the rectangle. We'll then have one extra step that we didn't have to take with the AABB. Since the axes are vectors, we'll have to scale them by our clamped scalar projections, (making a vector projection), to find the nearest x and y values in the rectangle's local space.
+          We can now see how far along each local axis the circle is, just as we
+          did with the AABB. And the next step is also the same. We need to
+          clamp these values to the boundaries of the rectangle. We'll then have
+          one extra step that we didn't have to take with the AABB. Since the
+          axes are vectors, we'll have to scale them by our clamped scalar
+          projections, (making a vector projection), to find the nearest x and y
+          values in the rectangle's local space.
         </p>
         <pre>
           <code class="lang-javascript">
@@ -462,9 +653,14 @@
             drawCircle(drawableLocalNearestY[0], drawableLocalNearestY[1], 10);
           </code>
         </pre>
-        <img src="img/08-collision-detection-2/obb-5.png" alt="rect local x and y for circle">
+        <img
+          src="img/08-collision-detection-2/obb-5.png"
+          alt="rect local x and y for circle"
+        />
         <p>
-          Again, very familiar looking. We have our x and y values in the rectangle's local space. We're almost done! Now, as before, we can find our closest point on the rectangle. 
+          Again, very familiar looking. We have our x and y values in the
+          rectangle's local space. We're almost done! Now, as before, we can
+          find our closest point on the rectangle.
         </p>
         <pre>
           <code class="lang-javascript">
@@ -475,10 +671,17 @@
           </code>
         </pre>
         <p>
-          We have been working with vectors without any respect to their origin, making all our calculations in a conceptual "local space" to the rectangle. To use our final result as a point on our canvas that we can get a distance measurement for, we have to move its origin to the rectangle. (We've been doing this already for every drawing we've done so that our lines and circles would show up on/around the rectangle instead of way off in the top left corner of the canvas.)
+          We have been working with vectors without any respect to their origin,
+          making all our calculations in a conceptual "local space" to the
+          rectangle. To use our final result as a point on our canvas that we
+          can get a distance measurement for, we have to move its origin to the
+          rectangle. (We've been doing this already for every drawing we've done
+          so that our lines and circles would show up on/around the rectangle
+          instead of way off in the top left corner of the canvas.)
         </p>
         <p>
-          We can now add our nearest point to our rectangle for a final illustration and finalize our collision detection.
+          We can now add our nearest point to our rectangle for a final
+          illustration and finalize our collision detection.
         </p>
         <pre>
           <code class="lang-javascript">
@@ -505,7 +708,8 @@
           Your browser does not support the video tag.
         </video>
         <p>
-          It works! Now that we know how to do this, let's go add it to our game.
+          It works! Now that we know how to do this, let's go add it to our
+          game.
         </p>
         <pre>
           <code class="lang-typescript">
@@ -541,7 +745,10 @@
           </code>
         </pre>
         <p>
-          We've transferred all the necessary functions from our proof of concept. Now we just need to check our player against our enemies and do something if a collision is found. For now, we'll just give ourselves a visual cue by turning the canvas red.
+          We've transferred all the necessary functions from our proof of
+          concept. Now we just need to check our player against our enemies and
+          do something if a collision is found. For now, we'll just give
+          ourselves a visual cue by turning the canvas red.
         </p>
         <pre>
           <code class="lang-typescript">
@@ -580,12 +787,15 @@
           Your browser does not support the video tag.
         </video>
         <p>
-          Great! We can now tell when an enemy has touched the player. We'll handle our "Game Over" scenario in the next section.
+          Great! We can now tell when an enemy has touched the player. We'll
+          handle our "Game Over" scenario in the next section.
         </p>
-        <a href="07-collision-detection-1.html">Previous</a>
-        <a href="09-game-over.html">Next</a>
       </section>
     </article>
+    <footer>
+      <a class="prev-link" href="07-collision-detection-1.html">&lt; 07 - Collisions Pt. 1</a>
+      <a class="next-link" href="09-game-over.html">09 - Game Over &gt;</a>
+    </footer>
     <script src="libs/prism.js"></script>
   </body>
 </html>
