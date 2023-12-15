@@ -71,7 +71,7 @@
           not setting a width and height for our canvas in our CSS. Width and
           height will need to be set as properties of the element, not as CSS
           styles. If we try to do it in CSS, our canvas will render as a (small)
-          default size, and then be stretched to our chose dimensions by CSS,
+          default size, and then be stretched to our chosen dimensions by CSS,
           distorting and resizing everything we've drawn, and we don't want
           that. From here on, we're (mostly) done with our HTML and CSS, and can
           spend the rest of our time building the game in TypeScript. Let's go
@@ -312,7 +312,7 @@
           point, its (0, 0) point, from the top left corner of the canvas to
           anywhere we want. By using
           <code class="lang-typescript">ctx.translate</code> and passing in the
-          coordinates of the center of the canvas, can draw our player with all
+          coordinates of the center of the canvas, we can draw our player with all
           points relative to (0, 0) and avoid a whole bunch of
           <code class="lang-typescript">+ canvas.width/2</code> and
           <code class="lang-typescript">+ canvas.height/2</code>. This will also
